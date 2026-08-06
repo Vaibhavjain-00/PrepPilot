@@ -10,6 +10,7 @@ import Button from "../components/common/Button";
 
 import authService from "../services/auth.service.js";
 import { login } from "../store/authSlice.js";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 function Login() {
   const dispatch = useDispatch();
@@ -84,6 +85,17 @@ function Login() {
           </Link>
         </div>
       </form>
+      <div className="my-5 flex items-center">
+  <div className="flex-1 border-t"></div>
+
+  <span className="px-3 text-gray-500">
+    OR
+  </span>
+
+  <div className="flex-1 border-t"></div>
+</div>
+
+<GoogleLoginButton />
     </AuthLayout>
   );
 }

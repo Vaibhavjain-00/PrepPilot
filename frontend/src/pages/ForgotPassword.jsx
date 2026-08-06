@@ -32,7 +32,7 @@ function ForgotPassword() {
   email: data.email,
 });
 
-setSuccessMessage(response.data.message);
+setSuccessMessage(response.message);
 
     } catch (error) {
 

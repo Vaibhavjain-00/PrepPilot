@@ -6,7 +6,7 @@ import AuthLayout from "../components/layout/AuthLayout";
 import Input from "../components/common/Input";
 import PasswordInput from "../components/common/PasswordInput";
 import Button from "../components/common/Button";
-
+import GoogleLoginButton from "../components/GoogleLoginButton";
 import authService from "../services/auth.service.js";
 
 function Signup() {
@@ -129,6 +129,17 @@ function Signup() {
           </Link>
         </p>
       </form>
+      <div className="flex items-center my-6">
+  <div className="flex-1 border-t border-gray-300"></div>
+
+  <span className="px-3 text-gray-500 text-sm">
+    OR
+  </span>
+
+  <div className="flex-1 border-t border-gray-300"></div>
+</div>
+
+<GoogleLoginButton />
     </AuthLayout>
   );
 }

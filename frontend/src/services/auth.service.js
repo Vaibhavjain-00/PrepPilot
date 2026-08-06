@@ -47,6 +47,14 @@ const resendVerificationEmail = async (email) => {
   return response.data;
 };
 
+const googleLogin = async (credential) => {
+  const response = await api.post("/auth/google", {
+    credential,
+  });
+
+  return response.data;
+};
+
 const authService = {
   signup,
   login,
@@ -56,6 +64,7 @@ const authService = {
   resetPassword,
   verifyEmail,
   resendVerificationEmail,
+  googleLogin
 };
 
 export default authService;

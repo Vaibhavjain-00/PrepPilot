@@ -22,9 +22,6 @@ function VerifyEmail() {
 
     setSuccessMessage(response.message);
   } catch (error) {
-    console.log("Error:", error);
-    console.log("Response:", error.response);
-    console.log("Data:", error.response?.data);
 
     setServerError(
       error.response?.data?.message ||

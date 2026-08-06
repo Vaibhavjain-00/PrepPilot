@@ -13,6 +13,7 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   const {
     register,
@@ -31,7 +32,8 @@ function ResetPassword() {
 
       const response = await authService.resetPassword(token, data.password);
 
-      setSuccessMessage(response.data.message);
+      setSuccessMessage(response.message);
+       navigate("/login")
     } catch (error) {
       setServerError(
         error.response?.data?.message || "There is problem in sending email",

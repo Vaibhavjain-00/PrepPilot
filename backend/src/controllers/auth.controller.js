@@ -9,7 +9,7 @@ import {
   forgotPasswordMailgenContent,
 } from "../utils/mail.js";
 import crypto from "crypto";
-
+import { verifyGoogleToken } from "../utils/googleVerify.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -422,6 +422,73 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Mail has been sent to your email ID"));
 });
 
+const googleLogin = asyncHandler(async (req, res) => {
+
+    const { credential } = req.body;
+
+    if (!credential) {
+        throw new ApiError(400,"Google credential missing");
+    }
+
+    const payload = await verifyGoogleToken(credential);
+
+    const {
+        sub,
+        email,
+        name,
+        picture,
+        email_verified,
+    } = payload;
+
+    if (!email_verified) {
+        throw new ApiError(400,"Google email not verified");
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+
+        user = await User.create({
+            fullname: name,
+            email,
+            avatar: picture,
+            googleId: sub,
+            isEmailVerified: true,
+            role: "candidate",
+        });
+
+    }
+
+    const { accessToken, refreshToken } =
+        await generateAccessAndRefreshToken(user._id);
+
+    const loggedInUser =
+        await User.findById(user._id)
+        .select("-password -refreshToken");
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken",accessToken,options)
+        .cookie("refreshToken",refreshToken,options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken,
+                },
+                "Google login successful"
+            )
+        );
+
+});
+
 
 export {
   registerUser,
@@ -434,4 +501,5 @@ export {
   forgotPasswordRequest,
   changeCurrentPassword,
   resetForgotPassword,
+  googleLogin
 };

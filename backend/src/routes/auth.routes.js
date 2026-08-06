@@ -10,6 +10,7 @@ import {
   resetForgotPassword,
   verifyEmail,
   resendEmailVerification,
+  googleLogin
 } from "../controllers/auth.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -27,6 +28,7 @@ router.post(
   "/resend-verification-email",
   resendEmailVerification
 );
+router.post("/google", googleLogin);
 
 // Protected Routes
 router.post("/logout", verifyJWT, logoutUser);
