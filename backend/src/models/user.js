@@ -29,12 +29,10 @@ const userSchema = new Schema(
       minlength: 8,
       select: false,
     },
-    resumes: [
-      {
+    resume:{
         type: Schema.Types.ObjectId,
         ref: "Resume",
       },
-    ],
     role: {
       type: String,
       enum: ["candidate", "recruiter", "admin"],

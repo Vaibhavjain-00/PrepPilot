@@ -14,9 +14,11 @@ app.use(
   })
 );
 import authRouter from "./routes/auth.routes.js";
+import resumeRouter from "./routes/resume.route.js";
+
 
 app.use("/api/v1/auth", authRouter);
-
+app.use("/api/v1/resume", resumeRouter);
 
 app.use(errorHandler);
 export default app;

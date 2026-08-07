@@ -17,101 +17,85 @@ import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import authService from "./services/auth.service";
 import { login, logout } from "./store/authSlice";
-
+import Resume from "./pages/Resume.jsx";
+import { useState } from "react";
 
 function App() {
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     try {
+  //       const user = await authService.getCurrentUser();
 
-  useEffect(() => {
+  //       if (user) {
+  //         dispatch(
+  //           login({
+  //             userData: user,
+  //           }),
+  //         );
+  //       } else {
+  //         dispatch(logout());
+  //       }
+  //     } catch (error) {
+  //       dispatch(logout());
+  //     }
+  //   };
 
-    const checkUser = async () => {
+  //   checkUser();
+  // }, []);
 
-      try {
+  const [loading, setLoading] = useState(true);
 
-        const user = await authService.getCurrentUser();
+useEffect(() => {
+  const checkUser = async () => {
+    try {
+      const user = await authService.getCurrentUser();
 
-        if(user){
-          dispatch(login({
-            userData:user
-          }));
-        }
-        else{
-          dispatch(logout());
-        }
-
-      } catch(error){
-
+      if (user) {
+        dispatch(login({ userData: user }));
+      } else {
         dispatch(logout());
-
       }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    };
+  checkUser();
+}, []);
 
+if (loading) {
+  return <div>Loading...</div>;
+}
 
-    checkUser();
-
-  }, []);
-  
   return (
-    <Routes>
+  <Routes>
+    <Route element={<MainLayout />}>
+      {/* Public */}
+      <Route path="/" element={<Home />} />
 
-      <Route element={<MainLayout />}>
-
-        {/* Public Route */}
-        <Route path="/" element={<Home />} />
-
-
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-
-          <Route 
-            path="/dashboard" 
-            element={<Dashboard />} 
-          />
-
-        </Route>
-
-
-        {/* Guest Routes */}
-        <Route element={<GuestRoute />}>
-
-          <Route 
-            path="/login" 
-            element={<Login />} 
-          />
-
-          <Route 
-            path="/signup" 
-            element={<Signup />} 
-          />
-
-          <Route 
-            path="/verify-email" 
-            element={<VerifyEmail />} 
-          />
-
-          <Route 
-            path="/email-verification/:token" 
-            element={<EmailVerification />} 
-          />
-
-          <Route 
-            path="/forgot-password" 
-            element={<ForgotPassword />} 
-          />
-
-          <Route 
-            path="/reset-password/:token" 
-            element={<ResetPassword />} 
-          />
-
-        </Route>
-
+      {/* Protected */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/resume" element={<Resume />} />
       </Route>
 
-    </Routes>
-  );
+      {/* Guest */}
+      <Route element={<GuestRoute />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route
+          path="/email-verification/:token"
+          element={<EmailVerification />}
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+      </Route>
+    </Route>
+  </Routes>
+);
 }
 
 export default App;

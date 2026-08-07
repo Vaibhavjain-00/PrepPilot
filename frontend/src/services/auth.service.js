@@ -55,6 +55,27 @@ const googleLogin = async (credential) => {
   return response.data;
 };
 
+api.interceptors.response.use(
+(response)=>{
+    return response;
+},
+async(error)=>{
+
+    if(error.response.status===401){
+
+        const res = await api.post("/auth/refresh-token");
+
+        localStorage.setItem(
+            "accessToken",
+            res.data.accessToken
+        );
+
+        return api(error.config);
+    }
+
+    return Promise.reject(error);
+});
+
 const authService = {
   signup,
   login,
