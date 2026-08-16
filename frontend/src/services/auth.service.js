@@ -56,25 +56,43 @@ const googleLogin = async (credential) => {
 };
 
 api.interceptors.response.use(
-(response)=>{
-    return response;
-},
-async(error)=>{
+  (response) => response,
 
-    if(error.response.status===401){
+  async (error) => {
+    const originalRequest = error.config;
 
-        const res = await api.post("/auth/refresh-token");
+    // Refresh token API ko dobara refresh mat karo
+    if (originalRequest.url.includes("/refresh-token")) {
+      // logout
+      store.dispatch(logout());
 
-        localStorage.setItem(
-            "accessToken",
-            res.data.accessToken
-        );
+      window.location.href = "/login";
 
-        return api(error.config);
+      return Promise.reject(error);
+    }
+
+    // Access token expired
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        await api.post("/auth/refresh-token");
+
+        // Refresh successful → original request retry
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh token expired/invalid
+        store.dispatch(logout());
+
+        window.location.href = "/login";
+
+        return Promise.reject(refreshError);
+      }
     }
 
     return Promise.reject(error);
-});
+  }
+);
 
 const authService = {
   signup,

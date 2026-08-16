@@ -11,7 +11,6 @@ const resumeSchema = new Schema(
     fileUrl: {
       type: String,
       required: true,
-      required: true,
     },
     publicId: {
       type: String,

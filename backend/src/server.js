@@ -1,16 +1,50 @@
+// import dotenv from "dotenv/config";
+// import connectDB from "./db/index.js";
+// import app from "./app.js";
+
+
+
+// connectDB()
+//   .then(() => {
+//     app.listen(process.env.PORT, () => {
+//       console.log(`Server running on ${process.env.PORT}`);
+//     });
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
 import dotenv from "dotenv/config";
+import http from "http";
+import { Server } from "socket.io";
+
 import connectDB from "./db/index.js";
 import app from "./app.js";
+import { setupInterviewSocket } from "./socket/interview.socket.js";
 
+const PORT = process.env.PORT || 8000;
 
+// Create HTTP server using Express app
+const server = http.createServer(app);
 
+// Create Socket.IO server
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    credentials: true,
+  },
+});
+
+// Setup Socket.IO events
+setupInterviewSocket(io);
+
+// Connect database and start server
 connectDB()
   .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log(`Server running on ${process.env.PORT}`);
+    server.listen(PORT, () => {
+      console.log(`Server running on ${PORT}`);
     });
   })
   .catch((err) => {
-    console.log(err);
+    console.log("MongoDB connection failed:", err);
   });

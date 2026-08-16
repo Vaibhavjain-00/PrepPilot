@@ -11,14 +11,20 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
-  })
+  }),
 );
 import authRouter from "./routes/auth.routes.js";
 import resumeRouter from "./routes/resume.route.js";
-
+import interviewRoutes from "./routes/interview.route.js";
+import dashboardRoutes from "./routes/dashboard.route.js";
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/resume", resumeRouter);
+app.use("/api/v1/interviews", interviewRoutes);
+app.use(
+  "/api/v1/dashboard",
+  dashboardRoutes
+);
 
 app.use(errorHandler);
 export default app;

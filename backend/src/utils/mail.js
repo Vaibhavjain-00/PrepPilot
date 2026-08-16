@@ -1,26 +1,32 @@
 import Mailgen from "mailgen";
 import nodemailer from "nodemailer";
-import {ApiError} from "./ApiError.js"
-
+import { ApiError } from "./ApiError.js";
 
 const transporter = nodemailer.createTransport({
-    host: process.env.MAILTRAP_SMTP_HOST,
-    port: process.env.MAILTRAP_SMTP_PORT,
-    auth: {
-      user: process.env.MAILTRAP_SMTP_USER,
-      pass: process.env.MAILTRAP_SMTP_PASS,
-    },
-  });
+  // host: process.env.MAILTRAP_SMTP_HOST,
+  // port: process.env.MAILTRAP_SMTP_PORT,
+  // auth: {
+  //   user: process.env.MAILTRAP_SMTP_USER,
+  //   pass: process.env.MAILTRAP_SMTP_PASS,
+
+  host: process.env.MAIL_HOST,
+  port: Number(process.env.MAIL_PORT),
+  secure: false,
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASSWORD,
+  },
+});
 
 const sendEmail = async (options) => {
-    if (!options.email || !options.subject || !options.mailgenContent) {
+  if (!options.email || !options.subject || !options.mailgenContent) {
     throw new ApiError(400, "Email options are incomplete.");
-}
+  }
   const mailGenerator = new Mailgen({
     theme: "default",
     product: {
       name: "PrepPilot",
-      link: "http://localhost:5173"
+      link: "http://localhost:5173",
     },
   });
 
@@ -28,10 +34,8 @@ const sendEmail = async (options) => {
 
   const emailHtml = mailGenerator.generate(options.mailgenContent);
 
-  
-
   const mail = {
-    from:process.env.MAIL_FROM,
+    from:`"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM}>`,
     to: options.email,
     subject: options.subject,
     text: emailTextual,
@@ -45,10 +49,7 @@ const sendEmail = async (options) => {
       "Email service failed siliently. Make sure that you have provided your MAILTRAP credentials in the .env file",
     );
     console.error("Error: ", error);
-    throw new ApiError(
-        500,
-        "Failed to send email."
-    )
+    throw new ApiError(500, "Failed to send email.");
   }
 };
 

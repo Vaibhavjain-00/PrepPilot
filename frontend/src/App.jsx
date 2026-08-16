@@ -19,6 +19,13 @@ import authService from "./services/auth.service";
 import { login, logout } from "./store/authSlice";
 import Resume from "./pages/Resume.jsx";
 import { useState } from "react";
+import Interview from "./pages/Interview.jsx";
+import InterviewPreparing from "./pages/InterviewPreparing.jsx";
+import InterviewSetup from "./pages/InterviewSetup.jsx";
+import ActiveInterviewBar from "./pages/ActiveInterviewBar.jsx";
+import Evaluation from "./pages/Evaluation.jsx";
+import InterviewHistory from "./pages/InterviewHistory.jsx";
+import Profile from "./pages/Profile.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -47,55 +54,79 @@ function App() {
 
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const checkUser = async () => {
-    try {
-      const user = await authService.getCurrentUser();
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const user = await authService.getCurrentUser();
 
-      if (user) {
-        dispatch(login({ userData: user }));
-      } else {
-        dispatch(logout());
+        if (user) {
+          dispatch(login({ userData: user }));
+        } else {
+          dispatch(logout());
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  checkUser();
-}, []);
+    checkUser();
+  }, []);
 
-if (loading) {
-  return <div>Loading...</div>;
-}
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-  <Routes>
-    <Route element={<MainLayout />}>
-      {/* Public */}
-      <Route path="/" element={<Home />} />
+    <>
+      <Routes>
+        <Route element={<MainLayout />}>
+          {/* Public */}
+          {/* <Route path="/" element={<Home />} /> */}
 
-      {/* Protected */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/resume" element={<Resume />} />
-      </Route>
+          {/* Protected */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/resume" element={<Resume />} />
+            <Route path="/interview/setup" element={<InterviewSetup />} />
 
-      {/* Guest */}
-      <Route element={<GuestRoute />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route
-          path="/email-verification/:token"
-          element={<EmailVerification />}
-        />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-      </Route>
-    </Route>
-  </Routes>
-);
+            <Route
+              path="/interview/:interviewId/preparing"
+              element={<InterviewPreparing />}
+            />
+
+            <Route path="/interview/:interviewId" element={<Interview />} />
+            <Route
+              path="/interview/:interviewId/evaluating"
+              element={<Evaluation />}
+            />
+            <Route
+              path="/interview/:interviewId/result"
+              element={<Evaluation />}
+            />
+            <Route path="/interview/history" element={<InterviewHistory />} />
+            <Route
+  path="/profile"
+  element={<Profile />}
+/>
+          </Route>
+
+          {/* Guest */}
+          <Route element={<GuestRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route
+              path="/email-verification/:token"
+              element={<EmailVerification />}
+            />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+          </Route>
+        </Route>
+      </Routes>
+      {/* <ActiveInterviewBar/> */}
+    </>
+  );
 }
 
 export default App;

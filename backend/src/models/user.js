@@ -14,12 +14,16 @@ const userSchema = new Schema(
       trim: true,
     },
     email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
+  type: String,
+  required: true,
+  unique: true,
+  lowercase: true,
+  trim: true,
+  match: [
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    "Please enter a valid email address",
+  ],
+},
     isEmailVerified: {
       type: Boolean,
       default: false,

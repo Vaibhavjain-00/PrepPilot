@@ -212,6 +212,7 @@ const updateResume = asyncHandler(async (req, res) => {
   if (!skills && !education && !experience && !projects) {
     throw new ApiError(400, "Nothing to update");
   }
+  
 
   const resume = await Resume.findOne({
     userId: req.user._id,
@@ -221,13 +222,15 @@ const updateResume = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Resume not found");
   }
 
+
+
   resume.skills = skills ?? resume.skills;
 
   resume.education = education ?? resume.education;
 
   resume.experience = experience ?? resume.experience;
 
-  resume.projects = experience ?? resume.projects;
+  resume.projects = projects ?? resume.projects;
 
   await resume.save();
 

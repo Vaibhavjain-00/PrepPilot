@@ -6,6 +6,7 @@ import ResumeHeader from "../components/resume/ResumeHeader";
 import ResumeStats from "../components/resume/ResumeStats";
 import ResumeCompleteness from "../components/resume/ResumeCompleteness";
 import resumeService from "../services/resume.service";
+import ActiveInterviewBar from "./ActiveInterviewBar";
 
 function Resume() {
 console.log("Resume Rendered");
@@ -70,7 +71,7 @@ console.log("Resume Rendered");
   />
 </>
     )}
-
+   <ActiveInterviewBar/>
   </div>
 );
 

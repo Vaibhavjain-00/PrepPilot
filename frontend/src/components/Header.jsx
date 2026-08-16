@@ -36,12 +36,12 @@ function Header() {
         {/* Navigation */}
         <nav className="flex items-center gap-6">
 
-          <Link
+          {/* <Link
             to="/"
             className="hover:text-blue-600"
           >
             Home
-          </Link>
+          </Link> */}
 
           {authStatus ? (
             <>
@@ -57,6 +57,13 @@ function Header() {
                 className="hover:text-blue-600"
               >
                 Profile
+              </Link>
+
+              <Link
+                to="/resume"
+                className="hover:text-blue-600"
+              >
+                Resume
               </Link>
 
               <button
