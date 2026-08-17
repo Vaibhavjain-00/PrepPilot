@@ -180,7 +180,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+    req.cookies?.refreshToken || req.body.refreshToken;
 
 
   if (!incomingRefreshToken) {
@@ -478,7 +478,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: true,
-  sameSite: none
+  sameSite: "none"
     };
 
     return res
