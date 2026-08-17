@@ -85,6 +85,7 @@ function App() {
 
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/resume" element={<Resume />} />
             <Route path="/interview/setup" element={<InterviewSetup />} />
