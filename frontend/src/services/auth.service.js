@@ -1,6 +1,4 @@
 import api from "../lib/axios.js";
-import store from "../store/store";
-import { logout as logoutUser } from "../store/authSlice";
 
 const signup = async (userData) => {
   const response = await api.post("/auth/register", userData);
@@ -23,76 +21,108 @@ const getCurrentUser = async () => {
 };
 
 const forgotPassword = async (email) => {
-  const response = await api.post("/auth/forgot-password", email );
-  return response.data;
-};
-
-const resetPassword = async (token, newPassword) => {
-  const response = await api.post(`/auth/reset-password/${token}`, {
-    newPassword,
+  const response = await api.post("/auth/forgot-password", {
+    email,
   });
 
   return response.data;
 };
 
+const resetPassword = async (token, newPassword) => {
+  const response = await api.post(
+    `/auth/reset-password/${token}`,
+    {
+      newPassword,
+    }
+  );
+
+  return response.data;
+};
+
 const verifyEmail = async (token) => {
-  const response = await api.get(`/auth/verify-email/${token}`);
+  const response = await api.get(
+    `/auth/verify-email/${token}`
+  );
+
   return response.data;
 };
 
 const resendVerificationEmail = async (email) => {
   const response = await api.post(
     "/auth/resend-verification-email",
-    {email}
+    {
+      email,
+    }
+  );
+
+  return response.data;
+};
+const googleLogin = async (credential) => {
+  const response = await api.post(
+    "/auth/google",
+    {
+      credential,
+    }
   );
 
   return response.data;
 };
 
-const googleLogin = async (credential) => {
-  return await api.post(
-    "/auth/google",
-    { credential },
-    {
-      withCredentials: true,
-    }
-  );
-};
-
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
 
   async (error) => {
     const originalRequest = error.config;
 
-    // Agar request hi refresh-token ki hai
-    if (originalRequest?.url?.includes("/auth/refresh-token")) {
-      store.dispatch(logoutUser());
-      window.location.href = "/login";
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    if (
+      originalRequest.url?.includes(
+        "/auth/refresh-token"
+      )
+    ) {
+      console.log(
+        "Refresh token request failed:",
+        error.response?.status
+      );
 
       return Promise.reject(error);
     }
 
-    // Access token expired
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401) {
       originalRequest._retry = true;
 
       try {
+        console.log(
+          "Access token expired. Trying refresh token..."
+        );
+
+        // Refresh access token
         await api.post("/auth/refresh-token");
 
-        // Refresh successful
+        console.log(
+          "Access token refreshed successfully"
+        );
+
+        // Retry original request
         return api(originalRequest);
       } catch (refreshError) {
-        store.dispatch(logoutUser());
-        window.location.href = "/login";
+        console.log(
+          "Refresh token failed:",
+          refreshError.response?.status
+        );
 
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );
@@ -106,7 +136,7 @@ const authService = {
   resetPassword,
   verifyEmail,
   resendVerificationEmail,
-  googleLogin
+  googleLogin,
 };
 
 export default authService;
