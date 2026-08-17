@@ -65,29 +65,28 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Refresh token API ko dobara refresh mat karo
-    if (originalRequest.url.includes("/refresh-token")) {
-      // logout
-      store.dispatch(logout());
-
+    // Agar request hi refresh-token ki hai
+    if (originalRequest?.url?.includes("/auth/refresh-token")) {
+      store.dispatch(logoutUser());
       window.location.href = "/login";
 
       return Promise.reject(error);
     }
 
     // Access token expired
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
 
       try {
         await api.post("/auth/refresh-token");
 
-        // Refresh successful → original request retry
+        // Refresh successful
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh token expired/invalid
         store.dispatch(logoutUser());
-
         window.location.href = "/login";
 
         return Promise.reject(refreshError);
