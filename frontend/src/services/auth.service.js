@@ -1,5 +1,6 @@
 import api from "../lib/axios.js";
 import store from "../store/store";
+import { logout as logoutUser } from "../store/authSlice";
 
 const signup = async (userData) => {
   const response = await api.post("/auth/register", userData);
@@ -85,7 +86,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         // Refresh token expired/invalid
-        store.dispatch(logout());
+        store.dispatch(logoutUser());
 
         window.location.href = "/login";
 
