@@ -48,11 +48,13 @@ const resendVerificationEmail = async (email) => {
 };
 
 const googleLogin = async (credential) => {
-  const response = await api.post("/auth/google", {
-    credential,
-  });
-
-  return response.data;
+  return await axiosInstance.post(
+    "/auth/google",
+    { credential },
+    {
+      withCredentials: true,
+    }
+  );
 };
 
 api.interceptors.response.use(
