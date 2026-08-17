@@ -1,4 +1,5 @@
 import api from "../lib/axios.js";
+import store from "../store/store";
 
 const signup = async (userData) => {
   const response = await api.post("/auth/register", userData);
@@ -48,7 +49,7 @@ const resendVerificationEmail = async (email) => {
 };
 
 const googleLogin = async (credential) => {
-  return await axiosInstance.post(
+  return await api.post(
     "/auth/google",
     { credential },
     {
