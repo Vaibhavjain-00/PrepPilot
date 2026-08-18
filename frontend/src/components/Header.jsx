@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -7,8 +8,11 @@ import PrepPilotLogo from "../assets/PrepPilot.png";
 
 function Header() {
   const authStatus = useSelector((state) => state.auth.status);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -16,60 +20,64 @@ function Header() {
 
       dispatch(logout());
 
+      setMenuOpen(false);
+
       navigate("/login");
     } catch (error) {
       console.log(error);
     }
   };
 
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <header className="w-full bg-white shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
 
         {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-bold text-blue-600"
+          onClick={closeMenu}
+          className="flex items-center"
         >
-          <img src={PrepPilotLogo} alt="PrepPilot" />
+          <img
+            src={PrepPilotLogo}
+            alt="PrepPilot"
+            className="h-7 w-auto object-contain sm:h-8"
+          />
         </Link>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-6">
-
-          {/* <Link
-            to="/"
-            className="hover:text-blue-600"
-          >
-            Home
-          </Link> */}
+        {/* Desktop Navigation */}
+        <nav className="hidden items-center gap-6 md:flex">
 
           {authStatus ? (
             <>
               <Link
                 to="/dashboard"
-                className="hover:text-blue-600"
+                className="font-medium text-gray-700 transition hover:text-blue-600"
               >
                 Dashboard
               </Link>
 
               <Link
                 to="/profile"
-                className="hover:text-blue-600"
+                className="font-medium text-gray-700 transition hover:text-blue-600"
               >
                 Profile
               </Link>
 
               <Link
                 to="/resume"
-                className="hover:text-blue-600"
+                className="font-medium text-gray-700 transition hover:text-blue-600"
               >
                 Resume
               </Link>
 
               <button
                 onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                className="rounded-lg bg-red-500 px-4 py-2 font-medium text-white transition hover:bg-red-600"
               >
                 Logout
               </button>
@@ -78,14 +86,14 @@ function Header() {
             <>
               <Link
                 to="/login"
-                className="hover:text-blue-600"
+                className="font-medium text-gray-700 transition hover:text-blue-600"
               >
                 Login
               </Link>
 
               <Link
                 to="/signup"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
               >
                 Signup
               </Link>
@@ -93,7 +101,111 @@ function Header() {
           )}
 
         </nav>
+
+        {/* Hamburger Button */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="rounded-lg p-2 text-gray-700 transition hover:bg-gray-100 md:hidden"
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? (
+            // X icon
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            // Hamburger icon
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="border-t border-gray-100 bg-white px-4 py-4 md:hidden">
+
+          <nav className="flex flex-col gap-2">
+
+            {authStatus ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  onClick={closeMenu}
+                  className="rounded-lg px-3 py-3 font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Dashboard
+                </Link>
+
+                <Link
+                  to="/profile"
+                  onClick={closeMenu}
+                  className="rounded-lg px-3 py-3 font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Profile
+                </Link>
+
+                <Link
+                  to="/resume"
+                  onClick={closeMenu}
+                  className="rounded-lg px-3 py-3 font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Resume
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 w-full rounded-lg bg-red-500 px-3 py-3 text-left font-medium text-white transition hover:bg-red-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={closeMenu}
+                  className="rounded-lg px-3 py-3 font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Login
+                </Link>
+
+                <Link
+                  to="/signup"
+                  onClick={closeMenu}
+                  className="rounded-lg bg-blue-600 px-3 py-3 font-medium text-white transition hover:bg-blue-700"
+                >
+                  Signup
+                </Link>
+              </>
+            )}
+
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
