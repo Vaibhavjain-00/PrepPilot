@@ -26,5 +26,9 @@ app.use(
   dashboardRoutes
 );
 
+app.get("/api/v1/healthcheck",(req,res)=>{
+  res.json({status:'online'});
+})
+
 app.use(errorHandler);
 export default app;
