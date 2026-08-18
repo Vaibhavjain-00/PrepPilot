@@ -26,6 +26,7 @@ import ActiveInterviewBar from "./pages/ActiveInterviewBar.jsx";
 import Evaluation from "./pages/Evaluation.jsx";
 import InterviewHistory from "./pages/InterviewHistory.jsx";
 import Profile from "./pages/Profile.jsx";
+import Loader from "./components/common/Loader.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -73,7 +74,7 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loader/>;
   }
 
   return (
