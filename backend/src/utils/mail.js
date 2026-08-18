@@ -42,14 +42,27 @@ const sendEmail = async (options) => {
     html: emailHtml,
   };
 
-  try {
-    await transporter.sendMail(mail);
+   try {
+    const info = await transporter.sendMail(mail);
+
+    console.log("========== EMAIL SENT ==========");
+    console.log({
+      accepted: info.accepted,
+      rejected: info.rejected,
+      response: info.response,
+      messageId: info.messageId,
+    });
+
+    return info;
+
   } catch (error) {
-    console.error(
-      "Email service failed siliently. Make sure that you have provided your MAILTRAP credentials in the .env file",
+    console.error("========== EMAIL ERROR ==========");
+    console.error(error);
+
+    throw new ApiError(
+      500,
+      "Failed to send email."
     );
-    console.error("Error: ", error);
-    throw new ApiError(500, "Failed to send email.");
   }
 };
 
