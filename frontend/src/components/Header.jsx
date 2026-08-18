@@ -45,11 +45,10 @@ function Header() {
           <img
             src={PrepPilotLogo}
             alt="PrepPilot"
-            className="h-7 w-auto object-contain sm:h-8"
+            className="h- w-auto object-contain sm:h-8"
           />
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
 
           {authStatus ? (
@@ -109,7 +108,6 @@ function Header() {
           aria-label="Toggle menu"
         >
           {menuOpen ? (
-            // X icon
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -125,7 +123,6 @@ function Header() {
               />
             </svg>
           ) : (
-            // Hamburger icon
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -143,8 +140,6 @@ function Header() {
           )}
         </button>
       </div>
-
-      {/* Mobile Menu */}
       {menuOpen && (
         <div className="border-t border-gray-100 bg-white px-4 py-4 md:hidden">
 
