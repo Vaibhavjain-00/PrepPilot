@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import authService from "../services/auth.service";
 import { logout } from "../store/authSlice";
+import PrepPilotLogo from "../assets/PrepPilot.png";
 
 function Header() {
   const authStatus = useSelector((state) => state.auth.status);
@@ -30,7 +31,7 @@ function Header() {
           to="/"
           className="text-2xl font-bold text-blue-600"
         >
-          <img src="./assets/preppilot logo.png" alt="PrepPilot" />
+          <img src={PrepPilotLogo} alt="PrepPilot" />
         </Link>
 
         {/* Navigation */}
