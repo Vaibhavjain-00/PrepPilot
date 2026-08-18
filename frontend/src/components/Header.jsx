@@ -45,7 +45,7 @@ function Header() {
           <img
             src={PrepPilotLogo}
             alt="PrepPilot"
-            className="h- w-auto object-contain sm:h-8"
+            className="h-9 w-auto object-contain sm:h-8"
           />
         </Link>
 
