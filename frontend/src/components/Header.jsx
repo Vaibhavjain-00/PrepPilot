@@ -30,7 +30,7 @@ function Header() {
           to="/"
           className="text-2xl font-bold text-blue-600"
         >
-          PrepPilot
+          <img src="./assets/preppilot logo.png" alt="PrepPilot" />
         </Link>
 
         {/* Navigation */}
