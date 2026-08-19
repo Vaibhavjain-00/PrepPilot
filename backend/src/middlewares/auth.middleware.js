@@ -19,11 +19,15 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     );
 
     if (!user) {
-      throw new ApiError(401, "Invalid access token");
+      console.log("User not found:", decodedToken?._id);
+      throw new ApiError(401, "User associated with token not found");
     }
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(401, "Invalid access token");
+    console.error("JWT VERIFY ERROR:", error.name);
+    console.error("JWT VERIFY MESSAGE:", error.message);
+
+    throw new ApiError(401, error.message);
   }
 });
