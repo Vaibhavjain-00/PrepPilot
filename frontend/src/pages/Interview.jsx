@@ -525,9 +525,6 @@ const Interview = () => {
 
       const data = response.data;
 
-      // ---------------------------------------
-      // LAST QUESTION
-      // ---------------------------------------
 
       if (data.isLastQuestion) {
         console.log(
@@ -541,9 +538,6 @@ const Interview = () => {
         return;
       }
 
-      // ---------------------------------------
-      // NEXT QUESTION
-      // ---------------------------------------
 
       const nextQuestion =
         data.nextQuestion;
@@ -574,9 +568,7 @@ const Interview = () => {
         nextQuestion
       );
 
-      // ---------------------------------------
-      // REDUX UPDATE
-      // ---------------------------------------
+  
 
       dispatch(
         nextInterviewQuestion({
@@ -599,9 +591,6 @@ const Interview = () => {
     }
   };
 
-  // -----------------------------------------
-  // LOADING
-  // -----------------------------------------
 
   if (loading) {
     return (
@@ -619,10 +608,7 @@ const Interview = () => {
     );
   }
 
-  // -----------------------------------------
-  // ERROR WITHOUT QUESTION
-  // -----------------------------------------
-
+ 
   if (
     error &&
     !currentQuestion
@@ -647,10 +633,6 @@ const Interview = () => {
     );
   }
 
-  // -----------------------------------------
-  // NO QUESTION
-  // -----------------------------------------
-
   if (!currentQuestion) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -672,9 +654,6 @@ const Interview = () => {
     );
   }
 
-  // -----------------------------------------
-  // DERIVED VALUES
-  // -----------------------------------------
 
   const totalQuestions =
     interview?.questionCount || 0;
@@ -694,17 +673,11 @@ const Interview = () => {
     currentIndex + 1 ===
     totalQuestions;
 
-  // -----------------------------------------
-  // UI
-  // -----------------------------------------
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <div className="mx-auto max-w-6xl">
 
-        {/* ================================= */}
-        {/* HEADER                            */}
-        {/* ================================= */}
 
         <div className="mb-6 flex items-center justify-between">
 
@@ -728,9 +701,6 @@ const Interview = () => {
           </div>
         </div>
 
-        {/* ================================= */}
-        {/* PROGRESS BAR                      */}
-        {/* ================================= */}
 
         <div className="mb-6 h-2 w-full overflow-hidden rounded-full bg-gray-200">
           <div
@@ -741,9 +711,7 @@ const Interview = () => {
           />
         </div>
 
-        {/* ================================= */}
-        {/* QUESTION CARD                     */}
-        {/* ================================= */}
+      
 
         <div className="rounded-xl bg-white p-6 shadow-sm">
 
@@ -771,10 +739,7 @@ const Interview = () => {
           </h2>
         </div>
 
-        {/* ================================= */}
-        {/* CODING SECTION                    */}
-        {/* ================================= */}
-
+     
         {isCoding && (
           <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm">
 
@@ -851,9 +816,6 @@ const Interview = () => {
           </div>
         )}
 
-        {/* ================================= */}
-        {/* ORAL SECTION                      */}
-        {/* ================================= */}
 
         {!isCoding && (
           <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
@@ -868,10 +830,6 @@ const Interview = () => {
               </p>
             </div>
 
-            {/* -------------------------------- */}
-            {/* TEXT ANSWER                      */}
-            {/* -------------------------------- */}
-
             <textarea
               value={answer}
               onChange={(e) =>
@@ -883,10 +841,6 @@ const Interview = () => {
               rows={8}
               className="w-full resize-none rounded-lg border border-gray-300 p-4 text-gray-900 outline-none transition focus:border-black"
             />
-
-            {/* -------------------------------- */}
-            {/* SPEECH TO TEXT                   */}
-            {/* -------------------------------- */}
 
             <div className="mt-5 border-t border-gray-200 pt-5">
 
@@ -931,9 +885,7 @@ const Interview = () => {
           </div>
         )}
 
-        {/* ================================= */}
-        {/* ERROR                             */}
-        {/* ================================= */}
+       
 
         {error && (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -941,9 +893,6 @@ const Interview = () => {
           </div>
         )}
 
-        {/* ================================= */}
-        {/* SUBMIT                            */}
-        {/* ================================= */}
 
         <div className="mt-6 flex justify-end">
 

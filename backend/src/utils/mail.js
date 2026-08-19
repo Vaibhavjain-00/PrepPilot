@@ -44,20 +44,9 @@ const sendEmail = async (options) => {
 
    try {
     const info = await transporter.sendMail(mail);
-
-    console.log("========== EMAIL SENT ==========");
-    console.log({
-      accepted: info.accepted,
-      rejected: info.rejected,
-      response: info.response,
-      messageId: info.messageId,
-    });
-
     return info;
 
   } catch (error) {
-    console.error("========== EMAIL ERROR ==========");
-    console.error(error);
 
     throw new ApiError(
       500,

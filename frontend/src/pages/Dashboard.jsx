@@ -37,8 +37,6 @@ const Dashboard = () => {
 
       const response = await dashboardService.getDashboard();
 
-      console.log("DASHBOARD RESPONSE:", response);
-
       setDashboard(response.data);
     } catch (error) {
       console.error("Failed to load dashboard:", error);
@@ -471,10 +469,6 @@ const Dashboard = () => {
   );
 };
 
-/* =====================================================
-   STAT CARD
-===================================================== */
-
 const StatCard = ({ icon: Icon, title, value, description }) => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -494,10 +488,6 @@ const StatCard = ({ icon: Icon, title, value, description }) => {
     </div>
   );
 };
-
-/* =====================================================
-   ACTIVE INTERVIEW
-===================================================== */
 
 const ActiveInterviewCard = ({ interview, onContinue }) => {
   return (
@@ -547,10 +537,6 @@ const ActiveInterviewCard = ({ interview, onContinue }) => {
   );
 };
 
-/* =====================================================
-   START INTERVIEW
-===================================================== */
-
 const StartInterviewCard = ({ onStart }) => {
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
@@ -579,10 +565,6 @@ const StartInterviewCard = ({ onStart }) => {
     </section>
   );
 };
-
-/* =====================================================
-   RECENT INTERVIEW
-===================================================== */
 
 const RecentInterview = ({ interview, onClick }) => {
   const score = interview.score ?? 0;
@@ -629,10 +611,6 @@ const RecentInterview = ({ interview, onClick }) => {
   );
 };
 
-/* =====================================================
-   QUICK ACTION
-===================================================== */
-
 const QuickAction = ({ icon: Icon, title, description, onClick }) => {
   return (
     <button
@@ -654,10 +632,6 @@ const QuickAction = ({ icon: Icon, title, description, onClick }) => {
   );
 };
 
-/* =====================================================
-   BADGE
-===================================================== */
-
 const Badge = ({ children }) => {
   return (
     <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-gray-600">
@@ -665,10 +639,6 @@ const Badge = ({ children }) => {
     </span>
   );
 };
-
-/* =====================================================
-   EMPTY INTERVIEWS
-===================================================== */
 
 const EmptyInterviews = () => {
   return (

@@ -85,11 +85,6 @@ const Evaluation = () => {
     };
   }, [interviewId, isEvaluating, navigate]);
 
-  /*
-    ========================================
-    EVALUATING SCREEN
-    ========================================
-  */
 
   if (isEvaluating && !evaluation) {
     return (
@@ -124,11 +119,7 @@ const Evaluation = () => {
     );
   }
 
-  /*
-    ========================================
-    LOADING RESULT
-    ========================================
-  */
+  
 
   if (loading && !evaluation) {
     return (
@@ -142,11 +133,7 @@ const Evaluation = () => {
     );
   }
 
-  /*
-    ========================================
-    ERROR
-    ========================================
-  */
+
 
   if (error) {
     return (
@@ -185,11 +172,7 @@ const Evaluation = () => {
     );
   }
 
-  /*
-    ========================================
-    RESULT
-    ========================================
-  */
+  
 
   const score =
     evaluation.overallScore ?? 0;
@@ -380,7 +363,6 @@ const Evaluation = () => {
 
         </div>
 
-        {/* Bottom Button */}
 
         <div className="mt-8 flex justify-center">
 

@@ -607,21 +607,6 @@ const getActiveInterview = asyncHandler(async (req, res) => {
       (totalScore / maxScore) * 100
     );
 
-    console.log(
-      "TOTAL SCORE:",
-      totalScore
-    );
-
-    console.log(
-      "MAX SCORE:",
-      maxScore
-    );
-
-    console.log(
-      "OVERALL SCORE:",
-      overallScore
-    );
-
     // ----------------------------------
     // 10. Create Evaluation document
     // ----------------------------------

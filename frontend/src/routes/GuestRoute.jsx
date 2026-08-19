@@ -7,8 +7,6 @@ function GuestRoute() {
         (state) => state.auth.status
     );
 
-    console.log("Guest Route Status:", authStatus);
-
     return authStatus ? (
         <Navigate to="/dashboard" replace />
     ) : (
