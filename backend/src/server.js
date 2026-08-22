@@ -18,6 +18,7 @@ import dotenv from "dotenv/config";
 import http from "http";
 import { Server } from "socket.io";
 import "./config/redis.js";
+import "./workers/evaluation.worker.js";
 
 import connectDB from "./db/index.js";
 import app from "./app.js";

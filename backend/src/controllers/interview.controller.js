@@ -414,6 +414,7 @@ const getActiveInterview = asyncHandler(async (req, res) => {
     )
   );
 });
+
  const evaluateInterviewController = asyncHandler(
   async (req, res) => {
     const { interviewId } = req.params;
