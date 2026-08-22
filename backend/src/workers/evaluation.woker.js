@@ -2,9 +2,9 @@ import { Worker } from "bullmq";
 
 import redis from "../config/redis.js";
 
-import Interview from "../models/interview.js";
-import Question from "../models/question.js";
-import Evaluation from "../models/evaluation.js";
+import {Interview} from "../models/interview.js";
+import {Question} from "../models/question.js";
+import {Evaluation} from "../models/evaluation.js";
 
 import { evaluateInterview } from "../services/aiEvaluation.service.js";
 
