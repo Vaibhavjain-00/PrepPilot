@@ -19,71 +19,163 @@ const Evaluation = () => {
 
   const [error, setError] = useState("");
 
+  // useEffect(() => {
+  //   let interval;
+
+  //   const checkEvaluation = async () => {
+  //     try {
+  //       const response =
+  //         await interviewService.getInterviewEvaluation(
+  //           interviewId
+  //         );
+
+  //       console.log(
+  //         "EVALUATION RESPONSE:",
+  //         response
+  //       );
+
+  //       const data = response.data;
+
+  //       if (data) {
+  //         setEvaluation(data);
+
+  //         // Evaluation mil gayi
+  //         if (isEvaluating) {
+  //           navigate(
+  //             `/interview/${interviewId}/result`,
+  //             {
+  //               replace: true,
+  //             }
+  //           );
+  //         }
+
+  //         if (interval) {
+  //           clearInterval(interval);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.log(
+  //         "Evaluation not ready yet..."
+  //       );
+
+  //       // Evaluation abhi backend mein chal rahi hai
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   checkEvaluation();
+
+  //   /*
+  //     Sirf evaluating page par polling chalegi.
+  //     Result page par polling ki zarurat nahi.
+  //   */
+
+  //   if (isEvaluating) {
+  //     interval = setInterval(
+  //       checkEvaluation,
+  //       2000
+  //     );
+  //   }
+
+  //   return () => {
+  //     if (interval) {
+  //       clearInterval(interval);
+  //     }
+  //   };
+  // }, [interviewId, isEvaluating, navigate]);
+
   useEffect(() => {
-    let interval;
+  let interval;
+  let isMounted = true;
 
-    const checkEvaluation = async () => {
-      try {
-        const response =
-          await interviewService.getInterviewEvaluation(
-            interviewId
-          );
-
-        console.log(
-          "EVALUATION RESPONSE:",
-          response
+  const checkEvaluation = async () => {
+    try {
+      const response =
+        await interviewService.getInterviewEvaluation(
+          interviewId
         );
 
-        const data = response.data;
+      console.log(
+        "EVALUATION RESPONSE:",
+        response
+      );
 
-        if (data) {
-          setEvaluation(data);
+      const data = response.data;
 
-          // Evaluation mil gayi
-          if (isEvaluating) {
-            navigate(
-              `/interview/${interviewId}/result`,
-              {
-                replace: true,
-              }
-            );
-          }
+      if (!isMounted) return;
 
-          if (interval) {
-            clearInterval(interval);
-          }
+      if (data) {
+        setEvaluation(data);
+        setLoading(false);
+
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
         }
-      } catch (error) {
+
+        if (isEvaluating) {
+          navigate(
+            `/interview/${interviewId}/result`,
+            {
+              replace: true,
+            }
+          );
+        }
+      }
+    } catch (error) {
+      /*
+        Evaluation not available yet.
+
+        404 ka matlab:
+        Worker abhi evaluation bana raha hai.
+      */
+
+      if (
+        error.response?.status === 404
+      ) {
         console.log(
           "Evaluation not ready yet..."
         );
 
-        // Evaluation abhi backend mein chal rahi hai
-      } finally {
+        return;
+      }
+
+      console.error(
+        "Failed to fetch evaluation:",
+        error
+      );
+
+      if (isMounted) {
+        setError(
+          "Failed to load interview evaluation."
+        );
         setLoading(false);
       }
-    };
-
-    checkEvaluation();
-
-    /*
-      Sirf evaluating page par polling chalegi.
-      Result page par polling ki zarurat nahi.
-    */
-
-    if (isEvaluating) {
-      interval = setInterval(
-        checkEvaluation,
-        2000
-      );
     }
+  };
 
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [interviewId, isEvaluating, navigate]);
+  checkEvaluation();
+
+  if (isEvaluating) {
+    interval = setInterval(
+      checkEvaluation,
+      3000
+    );
+  }
+
+  return () => {
+    isMounted = false;
+
+    if (interval) {
+      clearInterval(interval);
+    }
+  };
+}, [
+  interviewId,
+  isEvaluating,
+  navigate,
+]);
 
 
   if (isEvaluating && !evaluation) {
