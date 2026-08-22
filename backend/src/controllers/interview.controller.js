@@ -9,13 +9,11 @@ import {
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { evaluateInterview } from "../services/aiEvaluation.service.js";
+// import { evaluateInterview } from "../services/aiEvaluation.service.js";
 import { Evaluation } from "../models/evaluation.js";
-/*
-|--------------------------------------------------------------------------
-| Generate Interview
-|--------------------------------------------------------------------------
-*/
+
+import { evaluationQueue } from "../queues/evaluation.queue.js";
+
 
 const generateInterview = asyncHandler(
   async (req, res) => {
@@ -199,11 +197,7 @@ const generateInterview = asyncHandler(
   }
 );
 
-/*
-|--------------------------------------------------------------------------
-| Get Interview
-|--------------------------------------------------------------------------
-*/
+
 
 const getInterview = asyncHandler(async (req, res) => {
   const { interviewId } = req.params;
@@ -244,12 +238,6 @@ const getInterview = asyncHandler(async (req, res) => {
     )
   );
 });
-
-/*
-|--------------------------------------------------------------------------
-| Submit Answer
-|--------------------------------------------------------------------------
-*/
 
 const submitAnswer = asyncHandler(
   async (req, res) => {
@@ -415,6 +403,261 @@ const getActiveInterview = asyncHandler(async (req, res) => {
   );
 });
 
+// const evaluateInterviewController = asyncHandler(
+
+//   async (req, res) => {
+//     const { interviewId } = req.params;
+
+//     // ----------------------------------
+//     // 1. Find interview
+//     // ----------------------------------
+
+//     const interview = await Interview.findOne({
+//       _id: interviewId,
+//       userId: req.user._id,
+//     });
+
+//     if (!interview) {
+//       throw new ApiError(
+//         404,
+//         "Interview not found"
+//       );
+//     }
+
+//     // ----------------------------------
+//     // 2. Prevent duplicate evaluation
+//     // ----------------------------------
+
+//     const existingEvaluation =
+//       await Evaluation.findOne({
+//         interviewId,
+//         userId: req.user._id,
+//       });
+
+//     if (existingEvaluation) {
+//       return res.status(200).json(
+//         new ApiResponse(
+//           200,
+//           existingEvaluation,
+//           "Interview already evaluated"
+//         )
+//       );
+//     }
+
+//     // ----------------------------------
+//     // 3. Get questions
+//     // ----------------------------------
+
+//     const questions = await Question.find({
+//       interviewId: interview._id,
+//     }).sort({
+//       createdAt: 1,
+//     });
+
+//     if (!questions.length) {
+//       throw new ApiError(
+//         400,
+//         "No questions found for this interview"
+//       );
+//     }
+
+//     // ----------------------------------
+//     // 4. Mark as evaluating
+//     // ----------------------------------
+
+//     interview.status = "evaluating";
+
+//     await interview.save();
+
+//     // ----------------------------------
+//     // 5. AI Evaluation
+//     // ----------------------------------
+
+//     const evaluation =
+//       await evaluateInterview({
+//         interview,
+//         questions,
+//       });
+
+//     // ----------------------------------
+//     // 6. Validate AI response
+//     // ----------------------------------
+
+//     if (
+//       !evaluation ||
+//       !Array.isArray(
+//         evaluation.evaluatedQuestions
+//       )
+//     ) {
+//       interview.status = "in-progress";
+//       await interview.save();
+
+//       throw new ApiError(
+//         500,
+//         "Invalid AI evaluation response"
+//       );
+//     }
+
+//     if (
+//       evaluation.evaluatedQuestions.length !==
+//       questions.length
+//     ) {
+//       interview.status = "in-progress";
+//       await interview.save();
+
+//       throw new ApiError(
+//         500,
+//         "AI did not evaluate all questions"
+//       );
+//     }
+
+//     // ----------------------------------
+//     // 7. Map AI evaluation
+//     // ----------------------------------
+
+//     const evaluationQuestions =
+//       evaluation.evaluatedQuestions
+//         .map((item) => {
+//           const index =
+//             Number(item.questionNumber) - 1;
+
+//           const question =
+//             questions[index];
+
+//           if (!question) {
+//             return null;
+//           }
+
+//           let score = Number(item.score);
+
+//           // Safety
+//           if (Number.isNaN(score)) {
+//             score = 0;
+//           }
+
+//           if (score < 0) {
+//             score = 0;
+//           }
+
+//           if (score > 10) {
+//             score = 10;
+//           }
+
+//           return {
+//             questionId: question._id,
+
+//             question: question.question,
+
+//             category: question.category,
+
+//             candidateAnswer:
+//               question.candidateAnswer || "",
+
+//             score,
+
+//             feedback:
+//               item.feedback || "",
+//           };
+//         })
+//         .filter(Boolean);
+
+//     // ----------------------------------
+//     // 8. Make sure all questions mapped
+//     // ----------------------------------
+
+//     if (
+//       evaluationQuestions.length !==
+//       questions.length
+//     ) {
+//       interview.status = "in-progress";
+
+//       await interview.save();
+
+//       throw new ApiError(
+//         500,
+//         "Failed to map AI evaluation to questions"
+//       );
+//     }
+
+//     // ----------------------------------
+//     // 9. Calculate overall score
+//     // ----------------------------------
+
+//     const totalScore =
+//       evaluationQuestions.reduce(
+//         (sum, item) =>
+//           sum + item.score,
+//         0
+//       );
+
+//     const maxScore =
+//       questions.length * 10;
+
+//     const overallScore = Math.round(
+//       (totalScore / maxScore) * 100
+//     );
+
+//     // ----------------------------------
+//     // 10. Create Evaluation document
+//     // ----------------------------------
+
+//     const evaluationDocument =
+//       await Evaluation.create({
+//         userId: req.user._id,
+
+//         interviewId: interview._id,
+
+//         overallScore: overallScore,
+
+//         overallFeedback:
+//           evaluation.overallFeedback || "",
+
+//         questions: evaluationQuestions,
+//       });
+
+//     // ----------------------------------
+//     // 11. Update individual question scores
+//     // ----------------------------------
+
+//     for (
+//       const evaluatedQuestion
+//       of evaluationQuestions
+//     ) {
+//       await Question.findByIdAndUpdate(
+//         evaluatedQuestion.questionId,
+//         {
+//           score:
+//             evaluatedQuestion.score,
+//         }
+//       );
+//     }
+
+//     // ----------------------------------
+//     // 12. Mark interview completed
+//     // ----------------------------------
+
+//     interview.status = "completed";
+
+//     interview.score = overallScore;
+
+//     interview.feedback =
+//       evaluation.overallFeedback || "";
+
+//     await interview.save();
+
+//     // ----------------------------------
+//     // 13. Send response
+//     // ----------------------------------
+
+//     return res.status(200).json(
+//       new ApiResponse(
+//         200,
+//         evaluationDocument,
+//         "Interview evaluated successfully"
+//       )
+//     );
+// });
+
  const evaluateInterviewController = asyncHandler(
   async (req, res) => {
     const { interviewId } = req.params;
@@ -481,196 +724,61 @@ const getActiveInterview = asyncHandler(async (req, res) => {
     await interview.save();
 
     // ----------------------------------
-    // 5. AI Evaluation
+    // 5. Add evaluation job to BullMQ
     // ----------------------------------
 
-    const evaluation =
-      await evaluateInterview({
-        interview,
-        questions,
-      });
+    const job = await evaluationQueue.add(
+      "evaluate-interview",
+      {
+        interviewId: interview._id.toString(),
+        userId: req.user._id.toString(),
+      },
+      {
+        attempts: 3,
 
-    // ----------------------------------
-    // 6. Validate AI response
-    // ----------------------------------
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
 
-    if (
-      !evaluation ||
-      !Array.isArray(
-        evaluation.evaluatedQuestions
-      )
-    ) {
-      interview.status = "in-progress";
-      await interview.save();
+        removeOnComplete: true,
 
-      throw new ApiError(
-        500,
-        "Invalid AI evaluation response"
-      );
-    }
+        removeOnFail: false,
+      }
+    );
 
-    if (
-      evaluation.evaluatedQuestions.length !==
-      questions.length
-    ) {
-      interview.status = "in-progress";
-      await interview.save();
+    console.log(
+      "========== EVALUATION JOB QUEUED =========="
+    );
 
-      throw new ApiError(
-        500,
-        "AI did not evaluate all questions"
-      );
-    }
-
-    // ----------------------------------
-    // 7. Map AI evaluation
-    // ----------------------------------
-
-    const evaluationQuestions =
-      evaluation.evaluatedQuestions
-        .map((item) => {
-          const index =
-            Number(item.questionNumber) - 1;
-
-          const question =
-            questions[index];
-
-          if (!question) {
-            return null;
-          }
-
-          let score = Number(item.score);
-
-          // Safety
-          if (Number.isNaN(score)) {
-            score = 0;
-          }
-
-          if (score < 0) {
-            score = 0;
-          }
-
-          if (score > 10) {
-            score = 10;
-          }
-
-          return {
-            questionId: question._id,
-
-            question: question.question,
-
-            category: question.category,
-
-            candidateAnswer:
-              question.candidateAnswer || "",
-
-            score,
-
-            feedback:
-              item.feedback || "",
-          };
-        })
-        .filter(Boolean);
-
-    // ----------------------------------
-    // 8. Make sure all questions mapped
-    // ----------------------------------
-
-    if (
-      evaluationQuestions.length !==
-      questions.length
-    ) {
-      interview.status = "in-progress";
-
-      await interview.save();
-
-      throw new ApiError(
-        500,
-        "Failed to map AI evaluation to questions"
-      );
-    }
-
-    // ----------------------------------
-    // 9. Calculate overall score
-    // ----------------------------------
-
-    const totalScore =
-      evaluationQuestions.reduce(
-        (sum, item) =>
-          sum + item.score,
-        0
-      );
-
-    const maxScore =
-      questions.length * 10;
-
-    const overallScore = Math.round(
-      (totalScore / maxScore) * 100
+    console.log("Job ID:", job.id);
+    console.log(
+      "Interview ID:",
+      interview._id.toString()
     );
 
     // ----------------------------------
-    // 10. Create Evaluation document
+    // 6. Send immediate response
     // ----------------------------------
 
-    const evaluationDocument =
-      await Evaluation.create({
-        userId: req.user._id,
-
-        interviewId: interview._id,
-
-        overallScore: overallScore,
-
-        overallFeedback:
-          evaluation.overallFeedback || "",
-
-        questions: evaluationQuestions,
-      });
-
-    // ----------------------------------
-    // 11. Update individual question scores
-    // ----------------------------------
-
-    for (
-      const evaluatedQuestion
-      of evaluationQuestions
-    ) {
-      await Question.findByIdAndUpdate(
-        evaluatedQuestion.questionId,
-        {
-          score:
-            evaluatedQuestion.score,
-        }
-      );
-    }
-
-    // ----------------------------------
-    // 12. Mark interview completed
-    // ----------------------------------
-
-    interview.status = "completed";
-
-    interview.score = overallScore;
-
-    interview.feedback =
-      evaluation.overallFeedback || "";
-
-    await interview.save();
-
-    // ----------------------------------
-    // 13. Send response
-    // ----------------------------------
-
-    return res.status(200).json(
+    return res.status(202).json(
       new ApiResponse(
-        200,
-        evaluationDocument,
-        "Interview evaluated successfully"
+        202,
+        {
+          jobId: job.id,
+
+          interviewId:
+            interview._id,
+
+          status: "evaluating",
+        },
+        "Interview evaluation started"
       )
     );
   }
 );
 
- const getInterviewEvaluationController = asyncHandler(
+const getInterviewEvaluationController = asyncHandler(
   async (req, res) => {
     const { interviewId } = req.params;
 
