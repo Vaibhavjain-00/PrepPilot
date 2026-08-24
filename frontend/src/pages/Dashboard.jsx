@@ -96,10 +96,10 @@ const Dashboard = () => {
   }
 
   const user = dashboard?.user || {};
-
+  console.log("USER :",user);
   const resume = dashboard?.resume || {};
 
-  console.log("USER :",user);
+  console.log("RESUME :",resume);
 
   const interviews = dashboard?.interviews || {
     total: 0,
