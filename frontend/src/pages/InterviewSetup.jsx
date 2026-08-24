@@ -30,19 +30,18 @@ const InterviewSetup = () => {
       setError("");
 
       const response =
-        await interviewService.generateInterview({
-          role: role.trim(),
-          company: company.trim(),
-          difficulty,
-          questionCount,
-        });
+  await interviewService.generateInterview({
+    role: role.trim(),
+    company: company.trim(),
+    difficulty,
+    questionCount,
+  });
 
-      const interview =
-        response.interview;
+const interview = response.data.data.interview;
 
-      navigate(
-        `/interview/${interview._id}/preparing`
-      );
+navigate(
+  `/interview/${interview._id}/preparing`
+);
     } catch (error) {
       console.error(
         "Interview generation failed:",
