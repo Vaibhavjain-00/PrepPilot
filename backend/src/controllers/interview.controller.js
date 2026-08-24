@@ -13,7 +13,190 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Evaluation } from "../models/evaluation.js";
 
 import { evaluationQueue } from "../queues/evaluation.queue.js";
+import { interviewQueue } from "../queues/interview.queue.js";
 
+
+// const generateInterview = asyncHandler(
+//   async (req, res) => {
+//     const {
+//       role,
+//       company,
+//       difficulty,
+//       questionCount,
+//       language,
+//     } = req.body;
+
+//     /*
+//      * Basic validation
+//      */
+
+//     if (!role || !role.trim()) {
+//       throw new ApiError(
+//         400,
+//         "Role is required"
+//       );
+//     }
+
+//     if (
+//       !["easy", "medium", "hard"].includes(
+//         difficulty
+//       )
+//     ) {
+//       throw new ApiError(
+//         400,
+//         "Invalid difficulty"
+//       );
+//     }
+
+//     if (
+//       ![5, 10, 15].includes(questionCount)
+//     ) {
+//       throw new ApiError(
+//         400,
+//         "Question count must be 5, 10 or 15"
+//       );
+//     }
+
+//     if (
+//       language &&
+//       !["english", "hinglish"].includes(
+//         language
+//       )
+//     ) {
+//       throw new ApiError(
+//         400,
+//         "Invalid language"
+//       );
+//     }
+
+//     /*
+//      * Get candidate resume
+//      */
+
+//     const resume = await Resume.findOne({
+//       userId: req.user._id,
+//     });
+
+//     if (!resume) {
+//       throw new ApiError(
+//         404,
+//         "Please upload a resume before generating an interview"
+//       );
+//     }
+
+//     /*
+//      * Generate questions using AI
+//      */
+
+//     const aiResult =
+//       await generateInterviewQuestions({
+//         resume,
+//         role: role.trim(),
+//         company: company?.trim() || "",
+//         difficulty,
+//         questionCount,
+//         language: language || "english",
+//       });
+
+//     /*
+//      * Create Interview
+//      */
+
+//     const interview =
+//       await Interview.create({
+//         userId: req.user._id,
+
+//         role: role.trim(),
+
+//         company: company?.trim() || "",
+
+//         difficulty,
+
+//         language: language || "english",
+
+//         questionCount,
+
+//         codingQuestionCount:
+//           aiResult.distribution.coding,
+
+//         oralQuestionCount:
+//           aiResult.distribution.oral,
+
+//         status: "in-progress",
+//       });
+
+//     /*
+//      * Create Questions
+//      */
+
+//     const questionDocuments =
+//       aiResult.questions.map((item) => ({
+//         interviewId: interview._id,
+
+//         question: item.question.trim(),
+
+//         expectedAnswer:
+//           item.expectedAnswer?.trim() || "",
+
+//         category: item.category,
+
+//         candidateAnswer: "",
+
+//         score: null,
+//       }));
+
+//     const createdQuestions =
+//       await Question.insertMany(
+//         questionDocuments
+//       );
+
+//     /*
+//      * Store question IDs in Interview
+//      */
+
+//     interview.questions =
+//       createdQuestions.map(
+//         (question) => question._id
+//       );
+
+//     await interview.save();
+
+//     /*
+//      * Response
+//      */
+
+//     return res.status(201).json(
+//       new ApiResponse(
+//         201,
+//         {
+//           interview: {
+//             _id: interview._id,
+//             role: interview.role,
+//             company: interview.company,
+//             difficulty:
+//               interview.difficulty,
+//             language: interview.language,
+
+//             questionCount:
+//               interview.questionCount,
+
+//             codingQuestionCount:
+//               interview.codingQuestionCount,
+
+//             oralQuestionCount:
+//               interview.oralQuestionCount,
+
+//             status: interview.status,
+
+//             questions:
+//               createdQuestions,
+//           },
+//         },
+//         "Interview generated successfully"
+//       )
+//     );
+//   }
+// );
 
 const generateInterview = asyncHandler(
   async (req, res) => {
@@ -25,9 +208,9 @@ const generateInterview = asyncHandler(
       language,
     } = req.body;
 
-    /*
-     * Basic validation
-     */
+    // ----------------------------------
+    // 1. Validation
+    // ----------------------------------
 
     if (!role || !role.trim()) {
       throw new ApiError(
@@ -68,9 +251,9 @@ const generateInterview = asyncHandler(
       );
     }
 
-    /*
-     * Get candidate resume
-     */
+    // ----------------------------------
+    // 2. Get resume
+    // ----------------------------------
 
     const resume = await Resume.findOne({
       userId: req.user._id,
@@ -83,23 +266,9 @@ const generateInterview = asyncHandler(
       );
     }
 
-    /*
-     * Generate questions using AI
-     */
-
-    const aiResult =
-      await generateInterviewQuestions({
-        resume,
-        role: role.trim(),
-        company: company?.trim() || "",
-        difficulty,
-        questionCount,
-        language: language || "english",
-      });
-
-    /*
-     * Create Interview
-     */
+    // ----------------------------------
+    // 3. Create interview
+    // ----------------------------------
 
     const interview =
       await Interview.create({
@@ -107,96 +276,103 @@ const generateInterview = asyncHandler(
 
         role: role.trim(),
 
-        company: company?.trim() || "",
+        company:
+          company?.trim() || "",
 
         difficulty,
 
-        language: language || "english",
+        language:
+          language || "english",
 
         questionCount,
 
-        codingQuestionCount:
-          aiResult.distribution.coding,
+        codingQuestionCount: 0,
 
-        oralQuestionCount:
-          aiResult.distribution.oral,
+        oralQuestionCount: 0,
 
-        status: "in-progress",
+        status: "generating",
+
+        questions: [],
       });
 
-    /*
-     * Create Questions
-     */
+    // ----------------------------------
+    // 4. Add BullMQ job
+    // ----------------------------------
 
-    const questionDocuments =
-      aiResult.questions.map((item) => ({
-        interviewId: interview._id,
-
-        question: item.question.trim(),
-
-        expectedAnswer:
-          item.expectedAnswer?.trim() || "",
-
-        category: item.category,
-
-        candidateAnswer: "",
-
-        score: null,
-      }));
-
-    const createdQuestions =
-      await Question.insertMany(
-        questionDocuments
-      );
-
-    /*
-     * Store question IDs in Interview
-     */
-
-    interview.questions =
-      createdQuestions.map(
-        (question) => question._id
-      );
-
-    await interview.save();
-
-    /*
-     * Response
-     */
-
-    return res.status(201).json(
-      new ApiResponse(
-        201,
+    const job =
+      await interviewQueue.add(
+        "generate-interview",
         {
-          interview: {
-            _id: interview._id,
-            role: interview.role,
-            company: interview.company,
-            difficulty:
-              interview.difficulty,
-            language: interview.language,
+          interviewId:
+            interview._id.toString(),
 
-            questionCount:
-              interview.questionCount,
+          userId:
+            req.user._id.toString(),
 
-            codingQuestionCount:
-              interview.codingQuestionCount,
+          resumeId:
+            resume._id.toString(),
 
-            oralQuestionCount:
-              interview.oralQuestionCount,
+          role: role.trim(),
 
-            status: interview.status,
+          company:
+            company?.trim() || "",
 
-            questions:
-              createdQuestions,
-          },
+          difficulty,
+
+          questionCount,
+
+          language:
+            language || "english",
         },
-        "Interview generated successfully"
+        {
+          attempts: 3,
+
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
+
+          removeOnComplete: true,
+
+          removeOnFail: false,
+        }
+      );
+
+    console.log(
+      "========== INTERVIEW GENERATION JOB QUEUED =========="
+    );
+
+    console.log(
+      "Job ID:",
+      job.id
+    );
+
+    console.log(
+      "Interview ID:",
+      interview._id.toString()
+    );
+
+    // ----------------------------------
+    // 5. Immediate response
+    // ----------------------------------
+
+    return res.status(202).json(
+      new ApiResponse(
+        202,
+        {
+          jobId: job.id,
+
+          interviewId:
+            interview._id,
+
+          status: "generating",
+        },
+
+        "Interview generation started"
       )
     );
   }
-);
-
+);  
 
 
 const getInterview = asyncHandler(async (req, res) => {
@@ -825,12 +1001,6 @@ const getInterviewHistory = asyncHandler(async (req, res) => {
     )
   );
 });
-
-/*
-|--------------------------------------------------------------------------
-| Export
-|--------------------------------------------------------------------------
-*/
 
 
 

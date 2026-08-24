@@ -19,6 +19,7 @@ import http from "http";
 import { Server } from "socket.io";
 import "./config/redis.js";
 import "./workers/evaluation.woker.js";
+import "./workers/interview.worker.js"
 
 import connectDB from "./db/index.js";
 import app from "./app.js";
