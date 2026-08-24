@@ -2,9 +2,7 @@ import { Interview } from "../models/interview.js";
 import { Question } from "../models/question.js";
 import { Resume } from "../models/resume.js";
 
-import {
-  generateInterviewQuestions,
-} from "../services/aiInterview.service.js";
+import { generateInterviewQuestions } from "../services/aiInterview.service.js";
 
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -14,7 +12,6 @@ import { Evaluation } from "../models/evaluation.js";
 
 import { evaluationQueue } from "../queues/evaluation.queue.js";
 import { interviewQueue } from "../queues/interview.queue.js";
-
 
 // const generateInterview = asyncHandler(
 //   async (req, res) => {
@@ -198,177 +195,132 @@ import { interviewQueue } from "../queues/interview.queue.js";
 //   }
 // );
 
-const generateInterview = asyncHandler(
-  async (req, res) => {
-    const {
-      role,
-      company,
+const generateInterview = asyncHandler(async (req, res) => {
+  const { role, company, difficulty, questionCount, language } = req.body;
+
+  // ----------------------------------
+  // 1. Validation
+  // ----------------------------------
+
+  if (!role || !role.trim()) {
+    throw new ApiError(400, "Role is required");
+  }
+
+  if (!["easy", "medium", "hard"].includes(difficulty)) {
+    throw new ApiError(400, "Invalid difficulty");
+  }
+
+  if (![5, 10, 15].includes(questionCount)) {
+    throw new ApiError(400, "Question count must be 5, 10 or 15");
+  }
+
+  if (language && !["english", "hinglish"].includes(language)) {
+    throw new ApiError(400, "Invalid language");
+  }
+
+  // ----------------------------------
+  // 2. Get resume
+  // ----------------------------------
+
+  const resume = await Resume.findOne({
+    userId: req.user._id,
+  });
+
+  if (!resume) {
+    throw new ApiError(
+      404,
+      "Please upload a resume before generating an interview",
+    );
+  }
+
+  // ----------------------------------
+  // 3. Create interview
+  // ----------------------------------
+
+  const interview = await Interview.create({
+    userId: req.user._id,
+
+    role: role.trim(),
+
+    company: company?.trim() || "",
+
+    difficulty,
+
+    language: language || "english",
+
+    questionCount,
+
+    codingQuestionCount: 0,
+
+    oralQuestionCount: 0,
+
+    status: "generating",
+
+    questions: [],
+  });
+
+  // ----------------------------------
+  // 4. Add BullMQ job
+  // ----------------------------------
+
+  const job = await interviewQueue.add(
+    "generate-interview",
+    {
+      interviewId: interview._id.toString(),
+      userId: req.user._id.toString(),
+      resumeId: req.user.resume.toString(),
+      role: role.trim(),
+      company: company?.trim() || "",
       difficulty,
       questionCount,
-      language,
-    } = req.body;
-
-    // ----------------------------------
-    // 1. Validation
-    // ----------------------------------
-
-    if (!role || !role.trim()) {
-      throw new ApiError(
-        400,
-        "Role is required"
-      );
-    }
-
-    if (
-      !["easy", "medium", "hard"].includes(
-        difficulty
-      )
-    ) {
-      throw new ApiError(
-        400,
-        "Invalid difficulty"
-      );
-    }
-
-    if (
-      ![5, 10, 15].includes(questionCount)
-    ) {
-      throw new ApiError(
-        400,
-        "Question count must be 5, 10 or 15"
-      );
-    }
-
-    if (
-      language &&
-      !["english", "hinglish"].includes(
-        language
-      )
-    ) {
-      throw new ApiError(
-        400,
-        "Invalid language"
-      );
-    }
-
-    // ----------------------------------
-    // 2. Get resume
-    // ----------------------------------
-
-    const resume = await Resume.findOne({
-      userId: req.user._id,
-    });
-
-    if (!resume) {
-      throw new ApiError(
-        404,
-        "Please upload a resume before generating an interview"
-      );
-    }
-
-    // ----------------------------------
-    // 3. Create interview
-    // ----------------------------------
-
-    const interview =
-      await Interview.create({
-        userId: req.user._id,
-
-        role: role.trim(),
-
-        company:
-          company?.trim() || "",
-
-        difficulty,
-
-        language:
-          language || "english",
-
-        questionCount,
-
-        codingQuestionCount: 0,
-
-        oralQuestionCount: 0,
-
-        status: "generating",
-
-        questions: [],
-      });
-
-    // ----------------------------------
-    // 4. Add BullMQ job
-    // ----------------------------------
-
-    const job = await interviewQueue.add(
-  "generate-interview",
-  {
-    interviewId: interview._id.toString(),
-    userId: req.user._id.toString(),
-    resumeId: req.user.resume.toString(),
-    role: role.trim(),
-    company: company?.trim() || "",
-    difficulty,
-    questionCount,
-    language: language || "english",
-  },
-  {
-    attempts: 3,
-
-    backoff: {
-      type: "exponential",
-      delay: 5000,
+      language: language || "english",
     },
-
-    removeOnComplete: true,
-    removeOnFail: false,
-  }
-);
-
-    console.log(
-      "========== INTERVIEW GENERATION JOB QUEUED =========="
-    );
-
-    console.log(
-      "Job ID:",
-      job.id
-    );
-
-    console.log(
-      "Interview ID:",
-      interview._id.toString()
-    );
-
-    // ----------------------------------
-    // 5. Immediate response
-    // ----------------------------------
-
-    return res.status(202).json(
-  new ApiResponse(
-    202,
     {
-      interview: {
-        _id: interview._id,
-        role: interview.role,
-        company: interview.company,
-        difficulty: interview.difficulty,
-        language: interview.language,
-        questionCount: interview.questionCount,
-        codingQuestionCount:
-          interview.codingQuestionCount,
-        oralQuestionCount:
-          interview.oralQuestionCount,
-        status: "generating",
-        questions: [],
+      attempts: 3,
+
+      backoff: {
+        type: "exponential",
+        delay: 5000,
       },
 
-      jobId: job.id,
+      removeOnComplete: true,
+      removeOnFail: false,
     },
-    "Interview generation started"
-  )
-);
-  }
-);  
+  );
 
+  console.log("========== INTERVIEW GENERATION JOB QUEUED ==========");
+
+  console.log("Job ID:", job.id);
+
+  console.log("Interview ID:", interview._id.toString());
+
+  // ----------------------------------
+  // 5. Immediate response
+  // ----------------------------------
+
+  return res.status(202).json(
+    new ApiResponse(
+      202,
+      {
+        interview: {
+          _id: interview._id,
+          role: interview.role,
+          company: interview.company,
+          difficulty: interview.difficulty,
+          language: interview.language,
+          questionCount: interview.questionCount,
+          codingQuestionCount: interview.codingQuestionCount,
+          oralQuestionCount: interview.oralQuestionCount,
+          status: "generating",
+          questions: [],
+        },
+
+        jobId: job.id,
+      },
+      "Interview generation started",
+    ),
+  );
+});
 
 const getInterview = asyncHandler(async (req, res) => {
   const { interviewId } = req.params;
@@ -386,7 +338,7 @@ const getInterview = asyncHandler(async (req, res) => {
 
   // Find first unanswered question
   let currentQuestionIndex = questions.findIndex(
-    (question) => !question.candidateAnswer?.trim()
+    (question) => !question.candidateAnswer?.trim(),
   );
 
   // If all questions are answered
@@ -394,8 +346,7 @@ const getInterview = asyncHandler(async (req, res) => {
     currentQuestionIndex = questions.length - 1;
   }
 
-  const currentQuestion =
-    questions[currentQuestionIndex] || null;
+  const currentQuestion = questions[currentQuestionIndex] || null;
 
   return res.status(200).json(
     new ApiResponse(
@@ -405,133 +356,72 @@ const getInterview = asyncHandler(async (req, res) => {
         currentQuestion,
         currentQuestionIndex,
       },
-      "Interview fetched successfully"
-    )
+      "Interview fetched successfully",
+    ),
   );
 });
 
-const submitAnswer = asyncHandler(
-  async (req, res) => {
-    const {
-      interviewId,
-      questionId,
-    } = req.params;
+const submitAnswer = asyncHandler(async (req, res) => {
+  const { interviewId, questionId } = req.params;
 
-    const { answer } = req.body;
+  const { answer } = req.body;
 
-    if (
-      typeof answer !== "string" ||
-      !answer.trim()
-    ) {
-      throw new ApiError(
-        400,
-        "Answer is required"
-      );
-    }
+  if (typeof answer !== "string" || !answer.trim()) {
+    throw new ApiError(400, "Answer is required");
+  }
 
-    const interview =
-      await Interview.findOne({
-        _id: interviewId,
-        userId: req.user._id,
-      });
+  const interview = await Interview.findOne({
+    _id: interviewId,
+    userId: req.user._id,
+  });
 
-    if (!interview) {
-      throw new ApiError(
-        404,
-        "Interview not found"
-      );
-    }
+  if (!interview) {
+    throw new ApiError(404, "Interview not found");
+  }
 
-    if (
-      interview.status !== "in-progress"
-    ) {
-      throw new ApiError(
-        400,
-        "Interview is no longer active"
-      );
-    }
+  if (interview.status !== "in-progress") {
+    throw new ApiError(400, "Interview is no longer active");
+  }
 
-    const question =
-      await Question.findOne({
-        _id: questionId,
-        interviewId,
-      });
+  const question = await Question.findOne({
+    _id: questionId,
+    interviewId,
+  });
 
-    if (!question) {
-      throw new ApiError(
-        404,
-        "Question not found"
-      );
-    }
+  if (!question) {
+    throw new ApiError(404, "Question not found");
+  }
 
-    /*
-     * Save candidate answer
-     */
+  /*
+   * Save candidate answer
+   */
 
-    question.candidateAnswer =
-      answer.trim();
+  question.candidateAnswer = answer.trim();
 
-    await question.save();
+  await question.save();
 
-    /*
-     * Find current question index
-     */
+  /*
+   * Find current question index
+   */
 
-    const currentIndex =
-      interview.questions.findIndex(
-        (id) =>
-          id.toString() ===
-          questionId.toString()
-      );
+  const currentIndex = interview.questions.findIndex(
+    (id) => id.toString() === questionId.toString(),
+  );
 
-    if (currentIndex === -1) {
-      throw new ApiError(
-        400,
-        "Question does not belong to this interview"
-      );
-    }
+  if (currentIndex === -1) {
+    throw new ApiError(400, "Question does not belong to this interview");
+  }
 
-    const isLastQuestion =
-      currentIndex ===
-      interview.questions.length - 1;
+  const isLastQuestion = currentIndex === interview.questions.length - 1;
 
-    /*
-     * Last question
-     */
+  /*
+   * Last question
+   */
 
-    if (isLastQuestion) {
-      interview.status = "evaluating";
+  if (isLastQuestion) {
+    interview.status = "evaluating";
 
-      await interview.save();
-
-      return res.status(200).json(
-        new ApiResponse(
-          200,
-          {
-            question,
-
-            isLastQuestion: true,
-
-            currentQuestionIndex:
-              currentIndex,
-
-            nextQuestion: null,
-          },
-          "Answer submitted successfully"
-        )
-      );
-    }
-
-    /*
-     * Next question
-     */
-
-    const nextQuestion =
-      await Question.findById(
-        interview.questions[
-          currentIndex + 1
-        ]
-      );
+    await interview.save();
 
     return res.status(200).json(
       new ApiResponse(
@@ -539,19 +429,41 @@ const submitAnswer = asyncHandler(
         {
           question,
 
-          isLastQuestion: false,
+          isLastQuestion: true,
 
-          currentQuestionIndex:
-            currentIndex + 1,
+          currentQuestionIndex: currentIndex,
 
-          nextQuestion,
+          nextQuestion: null,
         },
-        "Answer submitted successfully"
-      )
+        "Answer submitted successfully",
+      ),
     );
   }
-);
 
+  /*
+   * Next question
+   */
+
+  const nextQuestion = await Question.findById(
+    interview.questions[currentIndex + 1],
+  );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        question,
+
+        isLastQuestion: false,
+
+        currentQuestionIndex: currentIndex + 1,
+
+        nextQuestion,
+      },
+      "Answer submitted successfully",
+    ),
+  );
+});
 
 const getActiveInterview = asyncHandler(async (req, res) => {
   const interview = await Interview.findOne({
@@ -569,8 +481,8 @@ const getActiveInterview = asyncHandler(async (req, res) => {
       },
       interview
         ? "Active interview fetched successfully"
-        : "No active interview"
-    )
+        : "No active interview",
+    ),
   );
 });
 
@@ -829,153 +741,131 @@ const getActiveInterview = asyncHandler(async (req, res) => {
 //     );
 // });
 
- const evaluateInterviewController = asyncHandler(
-  async (req, res) => {
-    const { interviewId } = req.params;
+const evaluateInterviewController = asyncHandler(async (req, res) => {
+  const { interviewId } = req.params;
 
-    // ----------------------------------
-    // 1. Find interview
-    // ----------------------------------
+  // ----------------------------------
+  // 1. Find interview
+  // ----------------------------------
 
-    const interview = await Interview.findOne({
-      _id: interviewId,
-      userId: req.user._id,
-    });
+  const interview = await Interview.findOne({
+    _id: interviewId,
+    userId: req.user._id,
+  });
 
-    if (!interview) {
-      throw new ApiError(
-        404,
-        "Interview not found"
-      );
-    }
-
-    // ----------------------------------
-    // 2. Prevent duplicate evaluation
-    // ----------------------------------
-
-    const existingEvaluation =
-      await Evaluation.findOne({
-        interviewId,
-        userId: req.user._id,
-      });
-
-    if (existingEvaluation) {
-      return res.status(200).json(
-        new ApiResponse(
-          200,
-          existingEvaluation,
-          "Interview already evaluated"
-        )
-      );
-    }
-
-    // ----------------------------------
-    // 3. Get questions
-    // ----------------------------------
-
-    const questions = await Question.find({
-      interviewId: interview._id,
-    }).sort({
-      createdAt: 1,
-    });
-
-    if (!questions.length) {
-      throw new ApiError(
-        400,
-        "No questions found for this interview"
-      );
-    }
-
-    // ----------------------------------
-    // 4. Mark as evaluating
-    // ----------------------------------
-
-    interview.status = "evaluating";
-
-    await interview.save();
-
-    // ----------------------------------
-    // 5. Add evaluation job to BullMQ
-    // ----------------------------------
-
-    const job = await evaluationQueue.add(
-      "evaluate-interview",
-      {
-        interviewId: interview._id.toString(),
-        userId: req.user._id.toString(),
-      },
-      {
-        attempts: 3,
-
-        backoff: {
-          type: "exponential",
-          delay: 5000,
-        },
-
-        removeOnComplete: true,
-
-        removeOnFail: false,
-      }
-    );
-
-    console.log(
-      "========== EVALUATION JOB QUEUED =========="
-    );
-
-    console.log("Job ID:", job.id);
-    console.log(
-      "Interview ID:",
-      interview._id.toString()
-    );
-
-    // ----------------------------------
-    // 6. Send immediate response
-    // ----------------------------------
-
-    return res.status(202).json(
-      new ApiResponse(
-        202,
-        {
-          jobId: job.id,
-
-          interviewId:
-            interview._id,
-
-          status: "evaluating",
-        },
-        "Interview evaluation started"
-      )
-    );
+  if (!interview) {
+    throw new ApiError(404, "Interview not found");
   }
-);
 
-const getInterviewEvaluationController = asyncHandler(
-  async (req, res) => {
-    const { interviewId } = req.params;
+  // ----------------------------------
+  // 2. Prevent duplicate evaluation
+  // ----------------------------------
 
-    const evaluation = await Evaluation.findOne({
-      interviewId,
-      userId: req.user._id,
-    }).populate(
-      "questions.questionId"
-    );
+  const existingEvaluation = await Evaluation.findOne({
+    interviewId,
+    userId: req.user._id,
+  });
 
-    if (!evaluation) {
-      throw new ApiError(
-        404,
-        "Interview evaluation not found"
+  if (existingEvaluation) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, existingEvaluation, "Interview already evaluated"),
       );
-    }
+  }
 
-    return res.status(200).json(
+  // ----------------------------------
+  // 3. Get questions
+  // ----------------------------------
+
+  const questions = await Question.find({
+    interviewId: interview._id,
+  }).sort({
+    createdAt: 1,
+  });
+
+  if (!questions.length) {
+    throw new ApiError(400, "No questions found for this interview");
+  }
+
+  // ----------------------------------
+  // 4. Mark as evaluating
+  // ----------------------------------
+
+  interview.status = "evaluating";
+
+  await interview.save();
+
+  // ----------------------------------
+  // 5. Add evaluation job to BullMQ
+  // ----------------------------------
+
+  const job = await evaluationQueue.add(
+    "evaluate-interview",
+    {
+      interviewId: interview._id.toString(),
+      userId: req.user._id.toString(),
+    },
+    {
+      attempts: 3,
+
+      backoff: {
+        type: "exponential",
+        delay: 5000,
+      },
+
+      removeOnComplete: true,
+
+      removeOnFail: false,
+    },
+  );
+
+  console.log("========== EVALUATION JOB QUEUED ==========");
+
+  console.log("Job ID:", job.id);
+  console.log("Interview ID:", interview._id.toString());
+
+  // ----------------------------------
+  // 6. Send immediate response
+  // ----------------------------------
+
+  return res.status(202).json(
+    new ApiResponse(
+      202,
+      {
+        jobId: job.id,
+
+        interviewId: interview._id,
+
+        status: "evaluating",
+      },
+      "Interview evaluation started",
+    ),
+  );
+});
+
+const getInterviewEvaluationController = asyncHandler(async (req, res) => {
+  const { interviewId } = req.params;
+
+  const evaluation = await Evaluation.findOne({
+    interviewId,
+    userId: req.user._id,
+  }).populate("questions.questionId");
+
+  if (!evaluation) {
+    throw new ApiError(404, "Interview evaluation not found");
+  }
+
+  return res
+    .status(200)
+    .json(
       new ApiResponse(
         200,
         evaluation,
-        "Interview evaluation fetched successfully"
-      )
+        "Interview evaluation fetched successfully",
+      ),
     );
-  }
-);
+});
 
 const getInterviewHistory = asyncHandler(async (req, res) => {
   const evaluations = await Evaluation.find({
@@ -988,16 +878,50 @@ const getInterviewHistory = asyncHandler(async (req, res) => {
     })
     .sort({ createdAt: -1 });
 
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        evaluations,
+        "Interview history fetched successfully",
+      ),
+    );
+});
+
+const startInterview = asyncHandler(async (req, res) => {
+  const { interviewId } = req.params;
+
+  const interview = await Interview.findOne({
+    _id: interviewId,
+    userId: req.user._id,
+  });
+
+  if (!interview) {
+    throw new ApiError(404, "Interview not found");
+  }
+
+  if (interview.status !== "ready") {
+    throw new ApiError(
+      400,
+      "Interview is not ready to start"
+    );
+  }
+
+  interview.status = "in-progress";
+
+  await interview.save();
+
   return res.status(200).json(
     new ApiResponse(
       200,
-      evaluations,
-      "Interview history fetched successfully"
+      {
+        interview,
+      },
+      "Interview started successfully"
     )
   );
 });
-
-
 
 export {
   generateInterview,
@@ -1006,5 +930,6 @@ export {
   getActiveInterview,
   evaluateInterviewController,
   getInterviewEvaluationController,
-  getInterviewHistory
+  getInterviewHistory,
+  startInterview
 };

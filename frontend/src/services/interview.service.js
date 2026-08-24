@@ -1,18 +1,9 @@
-import axios from "axios";
+import api from "../lib/axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
 
 const interviewService = {
   generateInterview: async (data) => {
-    const response = await axiosInstance.post(
+    const response = await api.post(
       "/interviews/generate",
       data
     );
@@ -21,15 +12,21 @@ const interviewService = {
   },
 
   getInterview: async (interviewId) => {
-    const response = await axiosInstance.get(
+    const response = await api.get(
       `/interviews/${interviewId}`
     );
 
     return response.data;
   },
 
+  startInterview : async (interviewId) => {
+  return api.patch(
+    `/interviews/${interviewId}/start`
+  );
+},
+
   getActiveInterview: async () => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     "/interviews/active"
   );
 
@@ -41,7 +38,7 @@ const interviewService = {
     questionId,
     answer
   ) => {
-    const response = await axiosInstance.post(
+    const response = await api.post(
       `/interviews/${interviewId}/questions/${questionId}/answer`,
       {
         answer,
@@ -51,21 +48,22 @@ const interviewService = {
     return response.data;
   },
   evaluateInterview: async (interviewId) => {
-  const response = await axiosInstance.post(
+  const response = await api.post(
     `/interviews/${interviewId}/evaluate`
   );
 
   return response.data;
 },
 getInterviewEvaluation: async (interviewId) => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     `/interviews/${interviewId}/evaluation`
   );
 
   return response.data;
 },
+
 getInterviewHistory: async () => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     "/interviews/history"
   );
 

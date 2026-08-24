@@ -7,6 +7,7 @@ import {
   getInterview,
   getInterviewEvaluationController,
   getInterviewHistory,
+  startInterview,
   submitAnswer,
 } from "../controllers/interview.controller.js";
 
@@ -55,6 +56,11 @@ router.get(
   getInterviewEvaluationController
 );
 
+router.patch(
+  "/:interviewId/start",
+  verifyJWT,
+  startInterview
+);
 
 
 export default router;

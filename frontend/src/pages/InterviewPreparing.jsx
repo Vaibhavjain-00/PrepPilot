@@ -256,15 +256,27 @@ const InterviewPreparing = () => {
         </div>
 
         <button
-          onClick={() =>
-            navigate(
-              `/interview/${interviewId}`
-            )
+        onClick={async () => {
+          try {
+            await interviewService.startInterview(interviewId);
+
+            navigate(`/interview/${interviewId}`);
+          } catch (error) {
+            console.error(
+              "Failed to start interview:",
+              error
+            );
+
+            setError(
+              error.response?.data?.message ||
+                "Failed to start interview"
+            );
           }
-          className="mt-8 w-full rounded-lg bg-black px-6 py-3 font-medium text-white"
-        >
-          Start Interview
-        </button>
+        }}
+        className="mt-8 w-full rounded-lg bg-black px-6 py-3 font-medium text-white"
+      >
+        Start Interview
+      </button>
 
       </div>
     </div>
