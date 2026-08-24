@@ -37,7 +37,7 @@ const InterviewSetup = () => {
     questionCount,
   });
 
-const interview = response.data.data.interview;
+const interview = response.data.interview;
 
 navigate(
   `/interview/${interview._id}/preparing`
