@@ -14,9 +14,6 @@ import {
   finishInterview,
 } from "../store/interviewSlice";
 
-const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL || "http://localhost:8000";
-
 const LANGUAGES = [
   {
     label: "C++",
@@ -96,54 +93,92 @@ const Interview = () => {
   // SOCKET CONNECTION
   // -----------------------------------------
 
-  useEffect(() => {
-    if (!interviewId) return;
+ useEffect(() => {
+  if (!interviewId) return;
 
-    socketRef.current = socket;
+  socketRef.current = socket;
 
-    socket.on("connect", () => {
-      console.log(
-        "Socket connected:",
-        socket.id
-      );
+  const handleConnect = () => {
+    console.log(
+      "Socket connected:",
+      socket.id
+    );
 
-      console.log(
-        "Joining interview room:",
-        interviewId
-      );
+    console.log(
+      "Joining interview room:",
+      interviewId
+    );
 
-      socket.emit(
-        "join-interview",
-        interviewId
-      );
-    });
+    socket.emit(
+      "join-interview",
+      interviewId
+    );
+  };
 
-    socket.on("connect_error", (error) => {
-      console.error(
-        "Socket connection error:",
-        error
-      );
-    });
+  const handleConnectError = (error) => {
+    console.error(
+      "Socket connection error:",
+      error
+    );
+  };
 
-    socket.on("disconnect", (reason) => {
-      console.log(
-        "Socket disconnected:",
-        socket.id,
-        reason
-      );
-    });
+  const handleDisconnect = (reason) => {
+    console.log(
+      "Socket disconnected:",
+      socket.id,
+      reason
+    );
+  };
 
-    return () => {
-      socket.emit(
-        "leave-interview",
-        interviewId
-      );
+  socket.on(
+    "connect",
+    handleConnect
+  );
 
-      socket.disconnect();
+  socket.on(
+    "connect_error",
+    handleConnectError
+  );
 
-      socketRef.current = null;
-    };
-  }, [interviewId]);
+  socket.on(
+    "disconnect",
+    handleDisconnect
+  );
+
+  // Listener attach karne ke baad connect
+  if (!socket.connected) {
+    socket.connect();
+  } else {
+    // Agar already connected hai
+    handleConnect();
+  }
+
+  return () => {
+    socket.emit(
+      "leave-interview",
+      interviewId
+    );
+
+    socket.off(
+      "connect",
+      handleConnect
+    );
+
+    socket.off(
+      "connect_error",
+      handleConnectError
+    );
+
+    socket.off(
+      "disconnect",
+      handleDisconnect
+    );
+
+    socket.disconnect();
+
+    socketRef.current = null;
+  };
+}, [interviewId]);
 
   // -----------------------------------------
   // FETCH INTERVIEW FUNCTION
