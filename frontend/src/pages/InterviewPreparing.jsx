@@ -7,42 +7,109 @@ const InterviewPreparing = () => {
   const { interviewId } = useParams();
   const navigate = useNavigate();
 
-  const [interview, setInterview] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const [interview, setInterview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    let interval;
+
     const fetchInterview = async () => {
       try {
         const response =
-          await interviewService.getInterview(
-            interviewId
+          await interviewService.getInterview(interviewId);
+
+        console.log(
+          "INTERVIEW STATUS RESPONSE:",
+          response
+        );
+
+        const data = response.data;
+
+        const interviewData =
+          data.interview;
+
+        setInterview(interviewData);
+
+        /*
+         * Interview generation completed
+         */
+        if (interviewData.status === "ready") {
+          clearInterval(interval);
+
+          setLoading(false);
+
+          return;
+        }
+
+        /*
+         * Interview generation failed
+         */
+        if (interviewData.status === "failed") {
+          clearInterval(interval);
+
+          setError(
+            "Failed to generate interview. Please try again."
           );
 
-        setInterview(
-          response.data.interview
-        );
-      } catch (error) {
-        console.error(error);
+          setLoading(false);
 
-        setError(
-          error.response?.data?.message ||
-            "Unable to load interview"
-        );
-      } finally {
+          return;
+        }
+
+        /*
+         * Still generating
+         */
         setLoading(false);
+
+      } catch (error) {
+        console.error(
+          "Unable to fetch interview:",
+          error
+        );
+
+        /*
+         * Don't immediately show error while
+         * interview is being generated.
+         */
+
+        if (!interview) {
+          setError(
+            error.response?.data?.message ||
+              "Unable to load interview"
+          );
+
+          setLoading(false);
+        }
       }
     };
 
+    /*
+     * First request immediately
+     */
     fetchInterview();
+
+    /*
+     * Keep checking every 2 seconds
+     */
+    interval = setInterval(() => {
+      fetchInterview();
+    }, 2000);
+
+    /*
+     * Cleanup
+     */
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [interviewId]);
 
-  if (loading) {
+  /*
+   * Initial loading
+   */
+  if (loading && !interview) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -63,6 +130,9 @@ const InterviewPreparing = () => {
     );
   }
 
+  /*
+   * Error
+   */
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -86,6 +156,55 @@ const InterviewPreparing = () => {
     );
   }
 
+  /*
+   * Interview is still generating
+   */
+  if (
+    interview &&
+    interview.status !== "ready"
+  ) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
+
+        <div className="w-full max-w-xl rounded-2xl bg-white p-8 text-center shadow">
+
+          <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
+
+          <h1 className="text-2xl font-bold">
+            Preparing Your Interview
+          </h1>
+
+          <p className="mt-3 text-gray-500">
+            Our AI is generating personalized
+            questions based on your resume.
+          </p>
+
+          <p className="mt-4 text-sm text-gray-400">
+            This may take a few moments...
+          </p>
+
+          <div className="mt-6 rounded-lg bg-gray-50 p-4">
+
+            <p className="font-medium">
+              {interview.role}
+              {interview.company &&
+                ` • ${interview.company}`}
+            </p>
+
+            <p className="mt-1 text-sm text-gray-500">
+              {interview.questionCount} questions
+            </p>
+
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  /*
+   * Interview ready
+   */
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
 
@@ -111,11 +230,11 @@ const InterviewPreparing = () => {
             <p className="text-xl font-bold">
               {interview.questionCount}
             </p>
+
             <p className="text-sm text-gray-500">
               Questions
             </p>
           </div>
-
           <div className="rounded-lg bg-gray-50 p-4">
             <p className="text-xl font-bold">
               {interview.codingQuestionCount}
