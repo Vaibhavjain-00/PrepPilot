@@ -67,7 +67,7 @@ const interviewSchema = new Schema(
 
     status: {
       type: String,
-      enum: [  "generating","in-progress", "evaluating", "completed"],
+      enum: [  "generating","ready","in-progress", "evaluating", "completed"],
       default: "in-progress",
     },
   },
