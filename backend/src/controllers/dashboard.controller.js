@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {User} from "../models/user.js";
 import {Interview} from "../models/interview.js";
 import {Evaluation} from "../models/evaluation.js";
-
+import { Resume } from "../models/resume.js";
 const getDashboard = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
@@ -26,6 +26,10 @@ const getDashboard = asyncHandler(async (req, res) => {
       )
     );
   }
+
+  const resume = await Resume.findOne({
+  userId,
+});
 
   // --------------------------------
   // INTERVIEW STATISTICS
@@ -131,6 +135,7 @@ const getDashboard = asyncHandler(async (req, res) => {
       200,
       {
         user,
+        resume,
         interviews: {
           total: totalInterviews,
           averageScore,

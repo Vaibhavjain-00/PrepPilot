@@ -97,6 +97,8 @@ const Dashboard = () => {
 
   const user = dashboard?.user || {};
 
+  const resume = dashboard?.resume || {};
+
   console.log("USER :",user);
 
   const interviews = dashboard?.interviews || {
@@ -360,8 +362,8 @@ const Dashboard = () => {
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {user?.skills?.length > 0 ? (
-                    user.skills.slice(0, 4).map((skill, index) => (
+                  {resume?.skills?.length > 0 ? (
+                    resume.skills.slice(0, 4).map((skill, index) => (
                       <span
                         key={index}
                         className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
