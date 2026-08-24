@@ -304,6 +304,7 @@ const generateInterview = asyncHandler(
   {
     interviewId: interview._id.toString(),
     userId: req.user._id.toString(),
+    resumeId: req.user.resume.toString(),
     role: role.trim(),
     company: company?.trim() || "",
     difficulty,
