@@ -299,44 +299,29 @@ const generateInterview = asyncHandler(
     // 4. Add BullMQ job
     // ----------------------------------
 
-    const job =
-      await interviewQueue.add(
-        "generate-interview",
-        {
-          interviewId:
-            interview._id.toString(),
+    const job = await interviewGenerationQueue.add(
+  "generate-interview",
+  {
+    interviewId: interview._id.toString(),
+    userId: req.user._id.toString(),
+    role: role.trim(),
+    company: company?.trim() || "",
+    difficulty,
+    questionCount,
+    language: language || "english",
+  },
+  {
+    attempts: 3,
 
-          userId:
-            req.user._id.toString(),
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
 
-          resumeId:
-            resume._id.toString(),
-
-          role: role.trim(),
-
-          company:
-            company?.trim() || "",
-
-          difficulty,
-
-          questionCount,
-
-          language:
-            language || "english",
-        },
-        {
-          attempts: 3,
-
-          backoff: {
-            type: "exponential",
-            delay: 5000,
-          },
-
-          removeOnComplete: true,
-
-          removeOnFail: false,
-        }
-      );
+    removeOnComplete: true,
+    removeOnFail: false,
+  }
+);
 
     console.log(
       "========== INTERVIEW GENERATION JOB QUEUED =========="
@@ -357,20 +342,29 @@ const generateInterview = asyncHandler(
     // ----------------------------------
 
     return res.status(202).json(
-      new ApiResponse(
-        202,
-        {
-          jobId: job.id,
+  new ApiResponse(
+    202,
+    {
+      interview: {
+        _id: interview._id,
+        role: interview.role,
+        company: interview.company,
+        difficulty: interview.difficulty,
+        language: interview.language,
+        questionCount: interview.questionCount,
+        codingQuestionCount:
+          interview.codingQuestionCount,
+        oralQuestionCount:
+          interview.oralQuestionCount,
+        status: "generating",
+        questions: [],
+      },
 
-          interviewId:
-            interview._id,
-
-          status: "generating",
-        },
-
-        "Interview generation started"
-      )
-    );
+      jobId: job.id,
+    },
+    "Interview generation started"
+  )
+);
   }
 );  
 

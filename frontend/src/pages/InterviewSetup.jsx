@@ -40,10 +40,10 @@ const InterviewSetup = () => {
       const interview =
         response.data.interview;
 
-      const interviewId = data.interviewId;
+          const interviewId = data.interviewId;
 
       navigate(
-        `/interview/${interviewId}/preparing`
+        `/interview/${interview._id}/preparing`
       );
     } catch (error) {
       console.error(
