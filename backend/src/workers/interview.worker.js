@@ -111,6 +111,8 @@ const interviewWorker = new Worker(
         "========== AI INTERVIEW GENERATION COMPLETED =========="
       );
 
+      console.log("AI RESULT:", JSON.stringify(aiResult, null, 2));
+
       // ----------------------------------
       // 6. Validate AI response
       // ----------------------------------

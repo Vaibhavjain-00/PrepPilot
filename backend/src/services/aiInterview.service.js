@@ -9,6 +9,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 const askGemini = async (prompt) => {
   try {
+    console.log("========== GEMINI REQUEST STARTED ==========");
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-lite",
 
@@ -18,6 +19,8 @@ const askGemini = async (prompt) => {
         responseMimeType: "application/json",
       },
     });
+
+    console.log("========== GEMINI RESPONSE RECEIVED ==========");
 
     const text = response.text?.trim();
 
@@ -30,7 +33,9 @@ const askGemini = async (prompt) => {
      * Try direct JSON first.
      */
     try {
-      return JSON.parse(text);
+      const result = JSON.parse(text);
+      console.log("========== AI JSON PARSED ==========");
+      return result;
     } catch (error) {
       /*
        * Try extracting the JSON object.
