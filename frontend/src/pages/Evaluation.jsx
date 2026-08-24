@@ -96,11 +96,6 @@ const Evaluation = () => {
           interviewId
         );
 
-      console.log(
-        "EVALUATION RESPONSE:",
-        response
-      );
-
       const data = response.data;
 
       if (!isMounted) return;
@@ -134,9 +129,6 @@ const Evaluation = () => {
       if (
         error.response?.status === 404
       ) {
-        console.log(
-          "Evaluation not ready yet..."
-        );
 
         return;
       }

@@ -73,7 +73,6 @@ function Profile() {
       </div>
     );
   }
-console.log("UserData:-",userData)
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <div className="mx-auto max-w-5xl">

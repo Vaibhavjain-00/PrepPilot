@@ -22,11 +22,6 @@ const InterviewHistory = () => {
       const response =
         await interviewService.getInterviewHistory();
 
-      console.log(
-        "INTERVIEW HISTORY:",
-        response
-      );
-
       setInterviews(response.data || []);
     } catch (error) {
       console.error(

@@ -13,12 +13,9 @@ function VerifyEmail() {
 
   const email = location.state?.email;
   const handleResend = async () => {
-  console.log("Clicked");
 
   try {
     const response = await authService.resendVerificationEmail(email);
-
-    console.log("Response:", response);
 
     setSuccessMessage(response.message);
   } catch (error) {
