@@ -17,7 +17,6 @@ export const extractPdfText = async (buffer) => {
         return data.text.trim();
 
     } catch (error) {
-        console.log("PDF PARSE ERROR:", error);
         throw new ApiError(500, "Failed to parse PDF");
     }
 };

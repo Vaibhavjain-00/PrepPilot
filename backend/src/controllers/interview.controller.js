@@ -288,11 +288,6 @@ const generateInterview = asyncHandler(async (req, res) => {
     },
   );
 
-  console.log("========== INTERVIEW GENERATION JOB QUEUED ==========");
-
-  console.log("Job ID:", job.id);
-
-  console.log("Interview ID:", interview._id.toString());
 
   // ----------------------------------
   // 5. Immediate response
@@ -819,11 +814,6 @@ const evaluateInterviewController = asyncHandler(async (req, res) => {
       removeOnFail: false,
     },
   );
-
-  console.log("========== EVALUATION JOB QUEUED ==========");
-
-  console.log("Job ID:", job.id);
-  console.log("Interview ID:", interview._id.toString());
 
   // ----------------------------------
   // 6. Send immediate response

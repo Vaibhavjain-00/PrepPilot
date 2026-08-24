@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { io } from "socket.io-client";
 import Editor from "@monaco-editor/react";
+
+import socket from "../services/socket.js"
 
 import interviewService from "../services/interview.service";
 
@@ -98,10 +99,6 @@ const Interview = () => {
   useEffect(() => {
     if (!interviewId) return;
 
-    const socket = io(SOCKET_URL, {
-      withCredentials: true,
-    });
-
     socketRef.current = socket;
 
     socket.on("connect", () => {
@@ -162,28 +159,10 @@ const Interview = () => {
           interviewId
         );
 
-      console.log(
-        "GET INTERVIEW RESPONSE:",
-        response
-      );
-
       const data = response.data;
-
-      console.log(
-        "INTERVIEW DATA:",
-        data
-      );
 
       const interviewData = data.interview;
 
-      // ---------------------------------------
-      // IMPORTANT
-      // ---------------------------------------
-      // Backend currently returns populated
-      // interview.questions.
-      //
-      // So if currentQuestion is not returned,
-      // we can get it from questions array.
 
       let questionData =
         data.currentQuestion;
@@ -299,9 +278,6 @@ const Interview = () => {
     recognition.interimResults = false;
 
     recognition.onstart = () => {
-      console.log(
-        "Speech recognition started"
-      );
 
       setIsListening(true);
     };
@@ -326,17 +302,6 @@ const Interview = () => {
       if (!spokenText.trim()) {
         return;
       }
-
-      console.log(
-        "Speech converted successfully"
-      );
-
-      // ---------------------------------------
-      // IMPORTANT:
-      //
-      // Text is stored internally in `answer`
-      // but we don't render it separately.
-      // ---------------------------------------
 
       setAnswer((previous) => {
         const newText =
@@ -371,9 +336,6 @@ const Interview = () => {
     };
 
     recognition.onend = () => {
-      console.log(
-        "Speech recognition ended"
-      );
 
       setIsListening(false);
     };
@@ -506,11 +468,6 @@ const Interview = () => {
       setSubmitting(true);
       setError("");
 
-      console.log(
-        "Submitting answer for question:",
-        currentQuestion._id
-      );
-
       const response =
         await interviewService.submitAnswer(
           interviewId,
@@ -518,18 +475,10 @@ const Interview = () => {
           finalAnswer
         );
 
-      console.log(
-        "SUBMIT ANSWER RESPONSE:",
-        response
-      );
-
       const data = response.data;
 
 
       if (data.isLastQuestion) {
-        console.log(
-          "Interview completed. Going to evaluation."
-        );
         const response=await interviewService.evaluateInterview(interviewId);
         navigate(
           `/interview/${interviewId}/evaluating`
@@ -552,11 +501,6 @@ const Interview = () => {
 
         return;
       }
-
-      console.log(
-        "NEXT QUESTION:",
-        nextQuestion
-      );
 
       setCurrentQuestion(
         nextQuestion

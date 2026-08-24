@@ -85,9 +85,6 @@ ${resumeText}
       throw new Error("Empty AI response");
     }
 
-    console.log("===== GEMINI RAW RESPONSE =====");
-    console.log(text);
-    console.log("===============================");
     return JSON.parse(cleanJson(text));
   } catch (error) {
     console.log(error);

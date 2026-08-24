@@ -19,11 +19,6 @@ const InterviewPreparing = () => {
         const response =
           await interviewService.getInterview(interviewId);
 
-        console.log(
-          "INTERVIEW STATUS RESPONSE:",
-          response
-        );
-
         const data = response.data;
 
         const interviewData =

@@ -9,7 +9,6 @@ import resumeService from "../services/resume.service";
 import ActiveInterviewBar from "./ActiveInterviewBar";
 
 function Resume() {
-console.log("Resume Rendered");
     const [resume, setResume] = useState(null);
 
     const [loading, setLoading] = useState(true);

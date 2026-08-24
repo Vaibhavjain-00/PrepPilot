@@ -13,11 +13,6 @@ const evaluationWorker = new Worker(
   async (job) => {
     const { interviewId, userId } = job.data;
 
-    console.log(
-      `========== EVALUATION JOB STARTED ==========`
-    );
-
-    console.log("Interview ID:", interviewId);
 
     try {
       // ----------------------------------
@@ -44,9 +39,6 @@ const evaluationWorker = new Worker(
         });
 
       if (existingEvaluation) {
-        console.log(
-          "Interview already evaluated"
-        );
 
         return {
           success: true,
@@ -82,19 +74,11 @@ const evaluationWorker = new Worker(
       // 5. AI Evaluation
       // ----------------------------------
 
-      console.log(
-        "========== AI EVALUATION STARTED =========="
-      );
-
       const evaluation =
         await evaluateInterview({
           interview,
           questions,
         });
-
-      console.log(
-        "========== AI EVALUATION COMPLETED =========="
-      );
 
       // ----------------------------------
       // 6. Validate AI response
@@ -261,10 +245,6 @@ const evaluationWorker = new Worker(
 
       await interview.save();
 
-      console.log(
-        "========== EVALUATION SUCCESS =========="
-      );
-
       return {
         success: true,
         evaluationId:
@@ -273,10 +253,6 @@ const evaluationWorker = new Worker(
       };
 
     } catch (error) {
-
-      console.error(
-        "========== EVALUATION JOB FAILED =========="
-      );
 
       console.error(error);
 
@@ -327,10 +303,6 @@ evaluationWorker.on(
 
     console.error(error);
   }
-);
-
-console.log(
-  "========== EVALUATION WORKER READY =========="
 );
 
 export default evaluationWorker;

@@ -9,7 +9,6 @@ import { ApiError } from "../utils/ApiError.js";
 
 const askGemini = async (prompt) => {
   try {
-    console.log("========== GEMINI REQUEST STARTED ==========");
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-lite",
 
@@ -19,8 +18,6 @@ const askGemini = async (prompt) => {
         responseMimeType: "application/json",
       },
     });
-
-    console.log("========== GEMINI RESPONSE RECEIVED ==========");
 
     const text = response.text?.trim();
 
@@ -34,7 +31,6 @@ const askGemini = async (prompt) => {
      */
     try {
       const result = JSON.parse(text);
-      console.log("========== AI JSON PARSED ==========");
       return result;
     } catch (error) {
       /*
@@ -107,7 +103,6 @@ const validateQuestions = (
   distribution
 ) => {
   if (!Array.isArray(questions)) {
-    console.log("AI questions is not an array");
 
     return false;
   }
@@ -116,9 +111,6 @@ const validateQuestions = (
    * Check total number
    */
   if (questions.length !== questionCount) {
-    console.log(
-      `Expected ${questionCount} questions but received ${questions.length}`
-    );
 
     return false;
   }
@@ -135,7 +127,6 @@ const validateQuestions = (
       typeof item.question !== "string" ||
       !item.question.trim()
     ) {
-      console.log("Invalid question:", item);
 
       return false;
     }
@@ -147,10 +138,6 @@ const validateQuestions = (
       item.category !== "coding" &&
       item.category !== "oral"
     ) {
-      console.log(
-        "Invalid question category:",
-        item.category
-      );
 
       return false;
     }
@@ -177,9 +164,6 @@ const validateQuestions = (
    * Validate coding count
    */
   if (codingCount !== distribution.coding) {
-    console.log(
-      `Expected ${distribution.coding} coding questions but received ${codingCount}`
-    );
 
     return false;
   }
@@ -188,9 +172,6 @@ const validateQuestions = (
    * Validate oral count
    */
   if (oralCount !== distribution.oral) {
-    console.log(
-      `Expected ${distribution.oral} oral questions but received ${oralCount}`
-    );
 
     return false;
   }
@@ -227,12 +208,6 @@ const generateInterviewQuestions = async ({
    */
   const distribution =
     getQuestionDistribution(questionCount);
-
-  console.log(
-    "QUESTION DISTRIBUTION:",
-    distribution
-  );
-
   /*
    * Resume data
    */
@@ -439,9 +414,6 @@ OUTPUT FORMAT
   /*
    * Retry
    */
-  console.log(
-    "AI returned invalid questions. Retrying..."
-  );
 
   const retryPrompt = `
 Your previous response was INVALID.
