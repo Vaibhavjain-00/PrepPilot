@@ -97,6 +97,8 @@ const Dashboard = () => {
 
   const user = dashboard?.user || {};
 
+  console.log("USER :",user);
+
   const interviews = dashboard?.interviews || {
     total: 0,
     averageScore: 0,
@@ -271,7 +273,7 @@ const Dashboard = () => {
                     <span className="text-gray-500">Profile</span>
 
                     <span className="font-medium text-gray-900">
-                      {user?.name ? "Complete" : "Incomplete"}
+                      {user?.fullname ? "Complete" : "Incomplete"}
                     </span>
                   </div>
 
@@ -279,7 +281,7 @@ const Dashboard = () => {
                     <div
                       className="h-full rounded-full bg-black"
                       style={{
-                        width: user?.name ? "100%" : "30%",
+                        width: user?.fullname ? "100%" : "30%",
                       }}
                     />
                   </div>
