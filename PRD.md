@@ -1,412 +1,467 @@
-**AI-Powered Interview Preparation Platform**
+# PrepPilot — Product Requirements Document
 
-*Software Requirements & Project Build Document*
+## 1. Product Overview
 
-MERN Stack Capstone Project \| Prepared for a guided, phase-wise build
+**PrepPilot** is an AI-powered interview preparation platform that helps candidates practice mock interviews, use their resume as part of their preparation, and understand how they can improve their answers.
 
-**1. Introduction**
+The product is designed around a simple idea: interview practice should not stop at asking questions. Candidates should also receive useful, understandable feedback after every attempt.
 
-**1.1 Purpose of this Document**
+---
 
-This document defines what the AI Interview Preparation Platform must do, how it should be built, and in what order, so that it can be developed step-by-step while learning the MERN stack (MongoDB, Express, React, Node.js). It combines a Software Requirements Specification (SRS) with a practical build roadmap, so it can be used both as a reference and as a week-by-week task list.
+## 2. Problem Statement
 
-**1.2 Problem Statement**
+Interview preparation often involves solving questions from different websites, practicing alone, and getting little or no personalized feedback.
 
-Job seekers preparing for technical interviews rarely get realistic, personalized, and repeatable practice. Mock interviews with real people are expensive, hard to schedule, and inconsistent in feedback quality. Candidates need a platform that can generate role-specific interview questions, simulate a real spoken interview, evaluate answers with AI, let them solve live coding problems, and track their improvement over time — all without needing a human interviewer.
+PrepPilot aims to bring the main parts of this process into one application:
 
-**1.3 Project Goal**
+- Manage a resume
+- Prepare for interviews
+- Take AI-powered mock interviews
+- Receive question-wise feedback
+- Understand areas for improvement
+- Track previous interview attempts
 
-Build a full-stack, AI-powered mock interview platform where a candidate can upload a resume, receive a personalized interview based on their target role and experience level, go through a voice-based Q&A round, attempt a live coding round, and receive an AI-generated evaluation with a score, strengths, and areas to improve — visible on a personal analytics dashboard.
+---
 
-**1.4 Learning Objectives (why this project is a good MERN capstone)**
+## 3. Product Goal
 
-- Full MERN CRUD app with authentication and role-based access control (RBAC).
+Build a practical, full-stack interview preparation platform where a candidate can:
 
-- Integration with a third-party generative AI API (Gemini or OpenAI) for content generation and evaluation.
+1. Create an account.
+2. Verify their email or use Google login.
+3. Upload and manage a resume.
+4. Extract useful information from the resume using AI.
+5. Start an AI-powered mock interview.
+6. Submit answers question by question.
+7. Receive an AI-generated evaluation.
+8. Review scores, feedback, and improvement suggestions.
+9. View previous interview attempts from the dashboard/history.
 
-- Browser Speech-to-Text / Text-to-Speech APIs for a voice interview experience.
+---
 
-- Real-time features using Socket.io (live coding sessions, live interview status).
+## 4. Current Implemented Features
 
-- Background job processing with BullMQ + Redis (e.g., AI evaluation queue).
+### 4.1 Authentication
 
-- Secure code execution using Docker containers (coding round sandbox).
+- Email/password signup
+- Email verification
+- Login
+- Logout
+- Forgot password
+- Password reset
+- Google OAuth login
+- JWT access and refresh tokens
+- HTTP-only cookie based authentication in production
+- Protected routes
+- Candidate/recruiter/admin role field in the user model
 
-- File uploads and storage using Cloudinary (resumes, profile images).
+### 4.2 Resume Management
 
-- Production deployment across multiple services (Vercel, Render/Railway, MongoDB Atlas).
+A candidate can maintain one active resume.
 
-**2. Scope**
+The system supports:
 
-**2.1 In Scope (MVP – build this first)**
+- Resume upload
+- Resume replacement
+- Resume deletion
+- Resume retrieval
+- PDF/DOCX text extraction
+- AI-based resume parsing
+- Extracted skills
+- Education
+- Experience
+- Projects
+- Certifications
+- Editing parsed resume information
 
-- Candidate registration/login (email+password and Google OAuth).
+Resume files are stored using Cloudinary.
 
-- Resume upload and automatic skill/experience extraction.
+### 4.3 Interview Preparation
 
-- AI-generated interview questions based on role, company, and difficulty.
+The application provides an interview setup flow followed by an interview preparation screen and the actual interview.
 
-- Voice-based interview round using browser Speech-to-Text and Text-to-Speech.
+The interview experience supports:
 
-- AI evaluation of spoken/text answers with a score and written feedback.
+- Interview setup
+- Generated interview questions
+- Question-by-question answering
+- Answer submission
+- Interview completion
+- Evaluation state
+- Final evaluation/result page
 
-- Live coding round with an in-browser code editor and sandboxed execution.
+### 4.4 AI Evaluation
 
-- Candidate dashboard showing past interviews, scores, and progress over time.
+The AI evaluates submitted answers and produces:
 
-**2.2 In Scope (Phase 2 – add once MVP works)**
+- Per-question score
+- Per-question feedback
+- Improvement points within the feedback
+- Overall score
+- Overall feedback
 
-- Recruiter role: create interview templates, view candidate reports, schedule interviews.
+The evaluation is stored so the candidate can review it later.
 
-- Admin role: manage users, monitor AI usage/costs, view platform-wide analytics.
+### 4.5 Dashboard
 
-- Leaderboards and gamification (streaks, badges).
+The application has an overall candidate dashboard rather than treating the dashboard as only an interview screen.
 
-- Real-time notifications (interview reminders, evaluation-ready alerts).
+The dashboard is intended to give the user a quick view of their preparation activity and results.
 
-**2.3 Out of Scope (do not attempt initially)**
+### 4.6 Interview History
 
-- Native mobile apps (web-responsive only for v1).
+Candidates can view previous interviews and open their evaluation/results again.
 
-- Video-based interviews with facial expression/emotion analysis.
+### 4.7 Profile
 
-- Payment/subscription billing (can be a future add-on).
+The profile page provides account information and resume-related management.
 
-- Multi-language support beyond English.
+It is designed to let the user view their profile, see resume information, and manage their current resume.
 
-**3. User Roles & Personas**
+---
 
-|           |                                            |                                                                                                      |
-|-----------|--------------------------------------------|------------------------------------------------------------------------------------------------------|
-| **Role**  | **Description**                            | **Key Capabilities**                                                                                 |
-| Candidate | Primary end user preparing for interviews. | Register/login, upload resume, take AI interviews, attempt coding rounds, view dashboard & progress. |
-| Recruiter | Uses the platform to evaluate candidates.  | Create/customize interview templates, view candidate reports, schedule interviews for candidates.    |
-| Admin     | Platform owner/operator.                   | Manage users and roles, configure AI models/prompts, view platform-wide analytics and system health. |
+## 5. User Roles
 
-**4. User Workflow (End-to-End)**
+The user model currently supports:
 
-1.  Candidate registers or logs in (JWT session, optional Google OAuth).
+| Role      | Purpose                                          |
+| --------- | ------------------------------------------------ |
+| Candidate | Main interview preparation user                  |
+| Recruiter | Reserved for future recruiter functionality      |
+| Admin     | Reserved for future administration functionality |
 
-2.  Candidate uploads a resume (PDF/DOCX) via the dashboard.
+Candidate functionality is the primary implemented product flow.
 
-3.  Backend stores the file in Cloudinary and parses it to extract skills, education, and experience.
+Recruiter and Admin functionality should not be described as completed features until those dashboards and workflows are implemented.
 
-4.  Candidate selects a target role, company (optional), and difficulty level.
+---
 
-5.  AI Interview Generator (Gemini/OpenAI) creates a set of tailored questions based on parsed resume + selections.
+## 6. Main User Flow
 
-6.  Voice Interview round begins: system reads a question aloud (Text-to-Speech), candidate answers aloud (Speech-to-Text converts it to text).
+```text
+Signup / Login
+      ↓
+Email Verification
+      ↓
+Dashboard
+      ↓
+Upload Resume
+      ↓
+Resume Text Extraction
+      ↓
+AI Resume Parsing
+      ↓
+Interview Setup
+      ↓
+Interview Preparation
+      ↓
+Mock Interview
+      ↓
+Submit Answers
+      ↓
+Evaluation
+      ↓
+Score + Feedback + Improvements
+      ↓
+Dashboard / Interview History
+```
 
-7.  For technical roles, a Live Coding round follows: candidate solves a problem in the Monaco editor; code runs in an isolated Docker sandbox.
+---
 
-8.  AI Evaluation service scores each answer/submission, generates feedback, and stores results (processed via a BullMQ background job so the UI stays responsive).
+## 7. Resume Requirements
 
-9.  Dashboard updates with the new interview record, score trend, and specific improvement suggestions.
+### Functional Requirements
 
-**5. Functional Requirements**
+- A user can upload a resume.
+- The backend extracts text from the uploaded file.
+- The extracted text is sent to the AI resume parser.
+- Parsed skills, education, experience, projects, and certifications are stored.
+- The user can update parsed information.
+- The user can replace the existing resume.
+- The user can delete the resume.
+- Resume files are stored on Cloudinary.
 
-**5.1 Authentication & User Management**
+### Resume Data
 
-|        |                                                                                                     |
-|--------|-----------------------------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                                     |
-| FR-1   | Users can register with name, email, and password (hashed with bcrypt).                             |
-| FR-2   | Users can log in and receive a short-lived JWT access token plus a long-lived refresh token.        |
-| FR-3   | Users can log in via Google OAuth as an alternative to email/password.                              |
-| FR-4   | System enforces role-based access control (Candidate / Recruiter / Admin) on every protected route. |
-| FR-5   | Users can update their profile and reset a forgotten password via emailed link.                     |
+A resume can contain:
 
-**5.2 Resume Upload & Parsing**
+- Skills
+- Education
+- Experience
+- Projects
+- Certifications
+- Extracted text
+- File URL
+- Cloudinary public ID
+- Parsing status
+- Parsing timestamp
 
-|        |                                                                                             |
-|--------|---------------------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                             |
-| FR-6   | Candidate can upload a resume file (PDF/DOCX, max size enforced) to Cloudinary.             |
-| FR-7   | System extracts text from the resume and identifies skills, education, and past experience. |
-| FR-8   | Extracted data is editable by the candidate before it's used to generate an interview.      |
-
-**5.3 AI Interview Generation**
-
-|        |                                                                                                                                                                |
-|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                                                                                                |
-| FR-9   | Candidate selects target role, optional target company, and difficulty (Easy/Medium/Hard).                                                                     |
-| FR-10  | System calls the AI provider (Gemini/OpenAI) with a prompt built from resume data + selections to generate a structured question set (behavioral + technical). |
-| FR-11  | Generated questions are stored against the interview record for reuse and audit.                                                                               |
+---
 
-**5.4 Voice Interview**
+## 8. Interview Requirements
 
-|        |                                                                                                         |
-|--------|---------------------------------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                                         |
-| FR-12  | System reads each question aloud using the Web Speech Synthesis API.                                    |
-| FR-13  | Candidate's spoken answer is captured and transcribed via the Web Speech Recognition API.               |
-| FR-14  | Candidate can re-record an answer before submitting; a visible timer limits response time per question. |
-
-**5.5 Live Coding Round**
-
-|        |                                                                                          |
-|--------|------------------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                          |
-| FR-15  | Candidate is presented with a coding problem and an in-browser Monaco code editor.       |
-| FR-16  | Submitted code executes inside an isolated Docker container with CPU/memory/time limits. |
-| FR-17  | System returns pass/fail results per test case along with runtime.                       |
-
-**5.6 AI Evaluation & Feedback**
-
-|        |                                                                                                                             |
-|--------|-----------------------------------------------------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                                                             |
-| FR-18  | Each transcribed answer and coding submission is sent to the AI evaluator for scoring against expected criteria.            |
-| FR-19  | Evaluation runs as a background job (BullMQ + Redis) so the candidate isn't blocked waiting on the AI response.             |
-| FR-20  | System returns a numeric score, written feedback, and specific improvement tips per question and for the interview overall. |
-
-**5.7 Dashboard & Analytics**
-
-|        |                                                                                   |
-|--------|-----------------------------------------------------------------------------------|
-| **ID** | **Requirement**                                                                   |
-| FR-21  | Candidate can view a list of past interviews with date, role, and overall score.  |
-| FR-22  | Candidate can view a score trend chart across attempts and a per-skill breakdown. |
-| FR-23  | Recruiter/Admin dashboards show aggregate data across candidates (Phase 2).       |
-
-**6. Non-Functional Requirements**
-
-|                 |                                                                                                                                                       |
-|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Category**    | **Requirement**                                                                                                                                       |
-| Performance     | Standard API responses under 300ms; AI-dependent operations handled asynchronously with job status polling or Socket.io updates.                      |
-| Scalability     | Stateless Express API behind a process manager; Redis-backed queues so multiple workers can process AI jobs in parallel.                              |
-| Security        | Passwords hashed with bcrypt; JWT + refresh token rotation; input validation and sanitization on every endpoint; rate limiting on auth and AI routes. |
-| Reliability     | Failed AI/job calls retried with backoff (BullMQ); user-facing errors are graceful, never raw stack traces.                                           |
-| Usability       | Responsive UI (mobile/tablet/desktop); clear loading and error states, especially during AI-generation waits.                                         |
-| Maintainability | Modular backend (controllers/services/routes separated); documented environment variables; consistent code style (ESLint/Prettier).                   |
-| Portability     | Environment-based configuration so the same code runs locally, in staging, and in production without changes.                                         |
-
-**7. System Architecture**
-
-The platform follows a modular, service-oriented architecture within a monorepo-style split of frontend and backend:
-
-- Client (React) talks to the API over REST for CRUD operations and over Socket.io for real-time events (coding session updates, evaluation-ready notifications).
-
-- Express API delegates long-running work (AI generation, AI evaluation, code execution) to background workers via BullMQ queues backed by Redis, instead of handling them inline in the request.
-
-- A Docker-based sandbox service executes untrusted candidate code in isolation, with strict resource and time limits, and returns results to the API.
-
-- MongoDB Atlas is the system of record; Redis is used for queues and caching; Cloudinary stores uploaded files (resumes, avatars).
-
-- Gemini/OpenAI APIs are called only from the backend (never directly from the client) to protect API keys and control cost/rate limits.
-
-**8. Technology Stack**
-
-**8.1 Frontend**
-
-|                  |                                                     |
-|------------------|-----------------------------------------------------|
-| **Technology**   | **Purpose**                                         |
-| React            | Core UI library / component architecture.           |
-| Redux Toolkit    | Global state (auth, interview session state).       |
-| React Query      | Server-state caching, API data fetching/refetching. |
-| Tailwind CSS     | Utility-first styling.                              |
-| React Router     | Client-side routing.                                |
-| Socket.io Client | Real-time updates (coding session, notifications).  |
-| Monaco Editor    | In-browser code editor for the coding round.        |
-
-**8.2 Backend**
-
-|                     |                                                   |
-|---------------------|---------------------------------------------------|
-| **Technology**      | **Purpose**                                       |
-| Node.js + Express   | REST API server.                                  |
-| MongoDB + Mongoose  | Primary database and schema modeling.             |
-| Redis               | Caching and BullMQ queue backend.                 |
-| BullMQ              | Background job processing (AI calls, evaluation). |
-| Socket.io           | Real-time server-to-client communication.         |
-| JWT                 | Stateless authentication.                         |
-| Cloudinary          | File storage (resumes, images).                   |
-| Gemini / OpenAI API | Question generation and answer evaluation.        |
-| Docker              | Isolated sandbox for executing candidate code.    |
-
-**9. Database Design**
-
-MongoDB collections (Mongoose schemas), with primary fields:
-
-**9.1 User**
-
-|                       |                        |                                           |
-|-----------------------|------------------------|-------------------------------------------|
-| **Field**             | **Type**               | **Notes**                                 |
-| name                  | String                 | Required.                                 |
-| email                 | String                 | Required, unique.                         |
-| password              | String                 | Hashed (bcrypt); omitted for OAuth users. |
-| role                  | String                 | candidate \| recruiter \| admin.          |
-| resume                | ObjectId (ref: Resume) | Latest uploaded resume.                   |
-| createdAt / updatedAt | Date                   | Timestamps.                               |
+### Functional Requirements
 
-**9.2 Resume**
+- User can configure an interview.
+- System generates interview questions.
+- User answers questions sequentially.
+- Candidate answers are stored.
+- Interview can enter an evaluation state after completion.
+- Final evaluation can be viewed separately from the active interview.
 
-|            |                      |                                       |
-|------------|----------------------|---------------------------------------|
-| **Field**  | **Type**             | **Notes**                             |
-| userId     | ObjectId (ref: User) | Owner.                                |
-| fileUrl    | String               | Cloudinary URL.                       |
-| skills     | \[String\]           | Extracted/edited skills.              |
-| education  | \[Object\]           | Degree, institute, year.              |
-| experience | \[Object\]           | Company, role, duration, description. |
+### Evaluation Requirements
 
-**9.3 Interview**
+Each evaluated question should provide:
 
-|            |                              |                                         |
-|------------|------------------------------|-----------------------------------------|
-| **Field**  | **Type**                     | **Notes**                               |
-| userId     | ObjectId (ref: User)         | Candidate.                              |
-| role       | String                       | Target role (e.g., Backend Developer).  |
-| company    | String                       | Optional target company.                |
-| difficulty | String                       | easy \| medium \| hard.                 |
-| questions  | \[ObjectId\] (ref: Question) | Generated question set.                 |
-| score      | Number                       | Overall evaluation score.               |
-| feedback   | String                       | AI-generated summary feedback.          |
-| status     | String                       | in-progress \| evaluating \| completed. |
+- Score
+- Candidate answer
+- AI feedback
+- Practical improvement guidance
 
-**9.4 Question**
+The overall evaluation should provide:
 
-|                 |                           |                                           |
-|-----------------|---------------------------|-------------------------------------------|
-| **Field**       | **Type**                  | **Notes**                                 |
-| interviewId     | ObjectId (ref: Interview) | Parent interview.                         |
-| question        | String                    | Question text.                            |
-| expectedAnswer  | String                    | Reference answer/criteria for AI grading. |
-| candidateAnswer | String                    | Transcribed candidate response.           |
-| category        | String                    | behavioral \| technical \| coding.        |
-| score           | Number                    | Per-question score.                       |
+- Overall score
+- Overall feedback
 
-**9.5 CodingSubmission**
+---
 
-|           |                         |                                       |
-|-----------|-------------------------|---------------------------------------|
-| **Field** | **Type**                | **Notes**                             |
-| userId    | ObjectId (ref: User)    | Candidate.                            |
-| problemId | ObjectId (ref: Problem) | Coding problem attempted.             |
-| language  | String                  | Programming language used.            |
-| code      | String                  | Submitted source code.                |
-| runtime   | Number                  | Execution time (ms).                  |
-| score     | Number                  | Test cases passed / evaluation score. |
+## 9. Dashboard Requirements
 
-**10. Core API Endpoints**
+The dashboard should remain focused on the overall preparation experience.
 
-|                                |                                                       |
-|--------------------------------|-------------------------------------------------------|
-| **Method & Route**             | **Description**                                       |
-| POST /api/auth/register        | Register a new candidate/recruiter.                   |
-| POST /api/auth/login           | Log in and receive access + refresh tokens.           |
-| POST /api/auth/refresh         | Rotate an expired access token.                       |
-| POST /api/resume/upload        | Upload resume to Cloudinary and trigger parsing.      |
-| GET /api/resume/:id            | Fetch parsed resume data.                             |
-| POST /api/interview/generate   | Generate a new AI interview based on role/difficulty. |
-| GET /api/interview/:id         | Fetch an interview's questions and status.            |
-| POST /api/interview/:id/answer | Submit a transcribed answer for evaluation.           |
-| POST /api/coding/submit        | Submit code for sandboxed execution and scoring.      |
-| GET /api/dashboard/summary     | Fetch candidate's score history and analytics.        |
+It can surface:
 
-**11. Suggested Project Structure**
+- Recent interviews
+- Previous scores
+- Interview activity
+- Resume status
+- Useful preparation information
+- Links to start another interview
+- Links to interview history and profile
 
-**11.1 Backend (Node/Express)**
+The dashboard should not be described as an interviewer-only dashboard.
 
-- controllers/ – request handlers per resource (auth, resume, interview, coding)
+---
 
-- routes/ – Express route definitions
+## 10. Profile Requirements
 
-- models/ – Mongoose schemas
+The profile page should provide:
 
-- services/ – AI integration, resume parsing, scoring logic
+- User information
+- Current resume information
+- Resume upload/replacement
+- Resume deletion
+- Extracted skills
+- Other parsed resume information where useful
 
-- jobs/ & queues/ – BullMQ job processors and queue definitions
+---
 
-- socket/ – Socket.io event handlers
+## 11. Authentication & Security
 
-- middlewares/ – auth guard, RBAC, error handler, rate limiter
+The application uses:
 
-- validators/ – request payload validation (e.g., Joi/Zod)
+- bcrypt for password hashing
+- JWT authentication
+- Access and refresh tokens
+- HTTP-only cookies
+- Explicit CORS configuration
+- Helmet
+- Rate limiting
+- Input validation using Zod
+- Protected API routes
 
-- docker/ – sandbox execution configuration
+Sensitive credentials must remain in environment variables and must never be committed to the repository.
 
-- config/ & utils/ – env config, logger, helpers
+---
 
-**11.2 Frontend (React)**
+## 12. Technology Stack
 
-- src/pages/ – route-level views (Login, Dashboard, Interview, Coding)
+### Frontend
 
-- src/components/ – reusable UI components
+- React
+- Vite
+- React Router
+- Redux Toolkit
+- Tailwind CSS
+- Axios
+- Google OAuth
 
-- src/store/ – Redux Toolkit slices
+### Backend
 
-- src/services/ – React Query hooks / API client
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcrypt
+- Zod
+- Helmet
+- CORS
+- Express Rate Limit
+- Multer
+- Nodemailer
+- Mailgen
 
-- src/hooks/ – custom hooks (e.g., useSpeechRecognition)
+### AI & Processing
 
-**12. Security Requirements**
+- Google Gemini API
+- PDF parsing
+- DOCX parsing
+- AI-based resume parsing
+- AI-based interview question generation
+- AI-based interview evaluation
+- Background AI processing using Redis and BullMQ
 
-- Hash all passwords with bcrypt; never store plaintext.
+### Queue & Real-Time Processing
 
-- Use short-lived JWT access tokens with refresh-token rotation.
+- Redis
+- BullMQ
+- Socket.io
 
-- Apply Helmet for secure HTTP headers and configure CORS explicitly.
+### External Services
 
-- Validate and sanitize all inputs to prevent NoSQL injection and XSS.
+- MongoDB Atlas
+- Cloudinary
+- Mailtrap SMTP (For Development)
+- Brevo SMTP (For Production)
+- Vercel
+- Render
 
-- Apply CSRF protection if using cookie-based auth.
+---
 
-- Rate-limit authentication and AI-generation endpoints to control abuse and API cost.
+## 13. Deployment
 
-- Enforce strict resource/time limits on the Docker code-execution sandbox to prevent abuse.
+Current production architecture:
 
-**13. Deployment Plan**
+```text
+React Frontend
+      ↓
+    Vercel
+      ↓
+Node/Express API
+      ↓
+    Render
+      ↓
+MongoDB Atlas
+```
 
-|                        |                                            |
-|------------------------|--------------------------------------------|
-| **Component**          | **Platform**                               |
-| Frontend (React build) | Vercel                                     |
-| Backend API (Express)  | Render or Railway                          |
-| Database               | MongoDB Atlas                              |
-| Cache / Queue store    | Redis (managed, e.g., Upstash/Redis Cloud) |
-| File storage           | Cloudinary                                 |
-| Background workers     | BullMQ workers on Render/Railway           |
-| AI provider            | Gemini or OpenAI API                       |
+Additional services:
 
-**14. Suggested 10-Week Build Roadmap**
+```text
+Cloudinary → Resume/file storage
+Brevo      → Transactional email
+Gemini     → AI processing
+```
 
-A phased plan so each week produces a working, demoable increment rather than one large untested build.
+Docker is not part of the current production deployment. Containerization is a future improvement.
 
-|          |                             |                                                                                |
-|----------|-----------------------------|--------------------------------------------------------------------------------|
-| **Week** | **Focus**                   | **Deliverable**                                                                |
-| 1        | Authentication              | Register/login, JWT + refresh tokens, protected routes, RBAC skeleton.         |
-| 2        | Resume Upload               | Cloudinary upload + resume parsing into skills/education/experience.           |
-| 3        | AI Interview Generation     | Role/difficulty selection UI; Gemini/OpenAI question generation, stored in DB. |
-| 4        | Voice Interview             | Text-to-Speech question playback + Speech-to-Text answer capture.              |
-| 5        | Live Coding UI              | Monaco editor integrated; problem display; basic code submission flow.         |
-| 6        | AI Evaluation               | Scoring service for answers and code; feedback generation.                     |
-| 7        | Dashboard                   | Interview history, score trend chart, per-skill breakdown.                     |
-| 8        | Redis / Socket.io / BullMQ  | Move AI calls to background jobs; real-time status updates on the UI.          |
-| 9        | Docker Sandbox & Deployment | Isolate code execution in Docker; deploy all services to production.           |
-| 10       | Polish                      | Error handling, loading states, responsive design, bug fixes, README/demo.     |
+---
 
-**15. Acceptance Criteria (MVP Definition of Done)**
+## 14. Architecture Direction
 
-- A candidate can register, log in, and stay authenticated across a browser session.
+The current application primarily follows a frontend/backend split with background workers for long-running AI tasks:
 
-- A candidate can upload a resume and see extracted skills reflected in the UI.
+```text
+Frontend
+  React + Redux
+       ↓
+ REST API
+       ↓
+Backend
+ Node + Express
+       ↓
+ MongoDB
+```
 
-- A candidate can generate an interview and receive AI-written questions relevant to their selected role.
+The backend is organized into controllers, routes, models, services, middleware, configuration, and utilities.
 
-- A candidate can complete a voice Q&A round and see it transcribed correctly for common cases.
+Long-running AI processing is handled through background jobs using BullMQ and Redis. Interview generation and evaluation are processed by workers so the main API request does not have to wait for the AI work to finish.
 
-- A candidate can submit code for at least one coding problem and see pass/fail results.
+---
 
-- A candidate receives a numeric score and readable feedback after finishing an interview.
+## 15. Future Improvements
 
-- A candidate can see this interview appear on their dashboard with the correct score.
+The following are planned/future features rather than current completed functionality:
 
-**16. Resume / Portfolio Highlights**
+### Real-Time Features
 
-Once built, this project demonstrates: AI-generated personalized interviews, real-time voice-based mock interviews, resume parsing, an in-browser coding environment with sandboxed execution, an analytics dashboard, and a scalable, queue-backed architecture — strong talking points for interviews and a solid MERN + AI portfolio piece.
+- Socket.io integration improvements
+- Live interview/evaluation status updates
+- Real-time evaluation-ready notifications
+
+### Background Processing
+
+- Redis is used as the queue backend
+- BullMQ manages background jobs
+- Interview generation runs in a background worker
+- Interview evaluation runs in a background worker
+- Retry and exponential backoff handling for failed jobs
+
+### Coding Round
+
+- In-browser coding editor
+- Coding questions
+- Test-case execution
+- Secure code execution
+- Docker-based sandbox
+
+### Recruiter Features
+
+- Recruiter dashboard
+- Interview templates
+- Candidate reports
+- Interview scheduling
+
+### Admin Features
+
+- User management
+- Platform analytics
+- AI usage monitoring
+- System health monitoring
+
+### Analytics
+
+- Score trends
+- Skill-wise performance
+- More detailed progress tracking
+
+---
+
+## 16. Non-Goals for the Current Version
+
+The current version does not aim to provide:
+
+- Native mobile applications
+- Video interviews with facial/emotion analysis
+- Payment/subscription billing
+- Full recruiter workflows
+- Full admin workflows
+- Docker-based code execution
+
+These can be considered future extensions.
+
+---
+
+## 17. Project Status
+
+**Current status: Deployed and usable MVP**
+
+The core candidate experience is implemented and deployed.
+
+The project is intentionally being kept stable at this stage. Future development can focus on improving real-time updates, coding rounds, analytics, and recruiter/admin functionality. Background processing with Redis and BullMQ is already part of the implemented interview flow.
+
+---
+
+## 18. Development Philosophy
+
+PrepPilot is being developed as a practical learning and portfolio project while keeping the architecture close to what a real production application would need.
+
+The focus is on:
+
+- Clean separation between frontend and backend
+- Secure authentication
+- Reusable services and components
+- Real external service integrations
+- Useful AI features instead of AI being added only as a demo
+- Clear user feedback during long-running operations
+- Production deployment
