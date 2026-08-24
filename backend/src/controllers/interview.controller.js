@@ -299,7 +299,7 @@ const generateInterview = asyncHandler(
     // 4. Add BullMQ job
     // ----------------------------------
 
-    const job = await interviewGenerationQueue.add(
+    const job = await interviewQueue.add(
   "generate-interview",
   {
     interviewId: interview._id.toString(),
